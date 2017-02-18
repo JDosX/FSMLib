@@ -12,19 +12,25 @@ using FunctionScript;
 class DFA<T>
 {
 	protected State[] StartingStates;
+	protected FnVariable<T> CurrentItem;
 
 	protected class State
 	{
+		public const string CURRENT_ITEM_FNVARIABLE_NAME = "T";
+
 		/// <summary>
 		/// The name of the state
 		/// </summary>
 		private string Name;
 
 		/// <summary>
-		/// Whether the state is accepting or not
+		/// If set, then ending a traversal of the FSM on this state
+		/// would be considered a successful traversal
 		/// </summary>
 		public bool Accepting;
-		private Dictionary<State, List<FnScriptExpression<bool>>> Transitions;
+		private List<Tuple<State, FnScriptExpression<bool>>> Transitions;
+
+		// private Dictionary<State, List<FnScriptExpression<bool>>> Transitions;
 
 		public State(string name) : this(name, false) { }
 
@@ -32,7 +38,8 @@ class DFA<T>
 		{
 			Name        = name;
 			Accepting   = accepting;
-			Transitions = new Dictionary<State, List<FnScriptExpression<bool>>> ();
+			Transitions = new List<Tuple<State, FnScriptExpression<bool>>>();
+			// Transitions = new Dictionary<State, List<FnScriptExpression<bool>>> ();
 		}
 
 		/// <summary>
@@ -42,29 +49,27 @@ class DFA<T>
 		/// <param name="transitionFunction">The transition function to use</param>
 		public void AddTransition(State state, FnScriptExpression<bool> transitionFunction)
 		{
-			if (!Transitions.ContainsKey(state))
-			{
-				Transitions.Add(state, new List<FnScriptExpression<bool>> ());
-				// throw new ArgumentException("Transition already added from State " + Name + " to State " + state.Name);
-			}
-
-			Transitions[state].Add(transitionFunction);
+			Transitions.Add(new Tuple<State, FnScriptExpression<bool>> (state, transitionFunction));
 		}
 
-		public State Traverse(T input)
+		public HashSet<State> Traverse(T input)
 		{
-			// todo: finish
-			// iterate through all the states and all their transition functions. On the first successful
-			// transition function, return a next state.
+			HashSet<State> transitions = new HashSet<State>();
 
-			// todo: PROBLEM: What if there are multiple successful states. E.g: one transition function might be
-			// (((length > 6))) and another might be (((length == 7))), which one do you choose?
-			// Do you iterate through both? Just choose the first one that's defined? Etc...
-			// Easiest: Choose the first one that is defined in the file.
-			// Even easier: Remove the possibility for multiple transition functions between states. This
-			// is why you enabled FnScript and Regex for use in DFALib after all, to remove the need for
-			// multiple transition functions
-			return null;
+			// todo: finish
+			// iterate through all the states and all their transition functions.
+			// Return a list of all the states who's transition functions returned true.
+			foreach (Tuple<State, FnScriptExpression<bool>> t in Transitions)
+			{
+				t.Item2.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, t.Item1);
+
+				if (t.Item2.Execute())
+				{
+					transitions.Add(t.Item1);
+				}
+			}
+
+			return transitions;
 		}
 	}
 
@@ -76,45 +81,27 @@ class DFA<T>
 
 	public bool Traverse(IEnumerable<T> input)
 	{
-		bool valid = false;
-
-		for (int i = 0; !valid && i < StartingStates.Length; ++i)
-		{
-			State state = StartingStates[i];
-			foreach (T item in input)
-			{
-				state = state.Traverse(item);
-				if (state == null) break;
-			}
-
-			// The input is only valid if the DFA consumed
-			// all the input and if the DFA finished on a
-			// valid end state
-			valid = state != null && state.Accepting;
-		}
-
-		return valid;
+		return Traverse(input.GetEnumerator());
 	}
 
 	public bool Traverse(IEnumerator<T> input)
 	{
 		bool valid = false;
+		Queue<State> states = new Queue<State>(StartingStates);
 
-		for (int i = 0; !valid && i < StartingStates.Length; ++i)
+		while (input.MoveNext() && states.Count > 0)
 		{
-			State state = StartingStates[i];
-
-			while (input.MoveNext())
+			for (int i = states.Count - 1; i >= 0; i--)
 			{
-				state = state.Traverse(input.Current);
-				if (state == null) break;
+				HashSet<State> newStates = states.Dequeue().Traverse(input.Current);
+				foreach (State s in newStates) { states.Enqueue(s); }
 			}
+		}
 
-			// The input is only valid if the DFA consumed
-			// all the input and if the DFA finished on a
-			// valid end state
-			valid = state != null && state.Accepting;
-			input.Reset();
+		foreach (State s in states)
+		{
+			valid = s.Accepting;
+			if (valid) break;
 		}
 
 		return valid;
