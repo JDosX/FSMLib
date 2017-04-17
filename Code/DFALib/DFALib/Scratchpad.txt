@@ -1,0 +1,4 @@
+﻿Idea:
+
+FSM -> C# transpiler, so you don't have to dynamically load and process the FSM each time you run the software
+Will reduce performance foodprint on projects that don't need to have dynamically loaded FSMs

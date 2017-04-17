@@ -1,0 +1,42 @@
+﻿Example of a DFA text format:
+
+FSM FloatDetector {
+   // + denotes initial state
+   // * denotes accepting state
+   // denotes line comment (this might cause a problem)
+   // fnscript expressions automatically determine and assessed by understanding the type of DFA that was
+   // created to read this state transition
+
+   +State1 -> { "string transition" -> State2 }
+              { /regex transition/  -> State3, State4 }
+              { [str] == 3          -> State4, State5, State6 }
+
+  +*State2 -> etc....
+}
+
+Name_Of_FSM_2 {
+	...
+}
+
+// how to determine where different parts of the syntax start and end?
+// do we want python style (lines and indentations matter)
+// or C# style, where lines and scopes are specified using brackets
+
+
+---- TO INTERPRET STRINGS -----
+
+// go from starting " to ending ", making sure to skip over \"
+// TODO: Look at escape characters and their impact
+
+---- TO INTERPRET REGEX -----
+
+// go from starting / to ending /, making sure to skip over escape slashes
+
+----- TO INTERPRET FNSCRIPT -----
+
+// umm I don't really know
+// I think what I need to do is go from starting character to the ->, and skip over any whitespace or instances of ->
+// in parameter names and strings, but that doesn't seem fully scalabe to me right now. Need an easy way to delminit the fnscript
+
+// could introduce line endings (;) into the FnScript syntax, which might be good for other reasons too.
+// 

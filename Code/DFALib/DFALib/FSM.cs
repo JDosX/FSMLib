@@ -9,7 +9,7 @@ using FunctionScript;
 /// (E.g: if you are trying to analyse a list of ints, the O would be List<int>
 /// and the T would be int)
 /// </summary>
-class DFA<T>
+class FSM<T>
 {
 	protected State[] StartingStates;
 	protected FnVariable<T> CurrentItem;
@@ -19,13 +19,12 @@ class DFA<T>
 		public const string CURRENT_ITEM_FNVARIABLE_NAME = "T";
 
 		/// <summary>
-		/// The name of the state
+		/// The name of the state.
 		/// </summary>
 		private string Name;
 
 		/// <summary>
-		/// If set, then ending a traversal of the FSM on this state
-		/// would be considered a successful traversal
+		/// If set, then ending a traversal of the FSM on this state would be considered a successful traversal.
 		/// </summary>
 		public bool Accepting;
 		private List<Tuple<State, FnScriptExpression<bool>>> Transitions;
@@ -43,7 +42,7 @@ class DFA<T>
 		}
 
 		/// <summary>
-		/// Adds a new transition from this state to another
+		/// Adds a new transition from this state to another.
 		/// </summary>
 		/// /// <param name="state">The state to transition to</param>
 		/// <param name="transitionFunction">The transition function to use</param>
@@ -74,7 +73,7 @@ class DFA<T>
 	}
 
 
-	public DFA()
+	public FSM()
 	{
 		// todo: finish constructor
 	}
@@ -98,6 +97,8 @@ class DFA<T>
 			}
 		}
 
+		// Check that we've landed on a valid
+		// state once all the input is consumed.
 		foreach (State s in states)
 		{
 			valid = s.Accepting;
@@ -107,13 +108,7 @@ class DFA<T>
 		return valid;
 	}
 
-	public void LoadDFA(string instructions)
-	{
-		LoadDFA(new StringReader(instructions));
-	}
-
-	public void LoadDFA(TextReader reader)
-	{
-
-	}
+  public static FSM<T> FromStream(TextReader reader) {
+    throw new NotImplementedException();
+  }
 }
