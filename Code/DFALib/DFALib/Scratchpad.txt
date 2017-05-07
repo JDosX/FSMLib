@@ -1,4 +1,41 @@
-﻿Idea:
+﻿WHY DOES TEXTREADER RETURN AN INT INSTEAD OF A CHAR ON READ AND PEEK OPERATIONS?
 
-FSM -> C# transpiler, so you don't have to dynamically load and process the FSM each time you run the software
-Will reduce performance foodprint on projects that don't need to have dynamically loaded FSMs
+HOW TO CONSTRUCT TOKENS
+
+Looking for a way for the tokens to validate their provided content.
+Right now it's done by getting the token to validate whether the start character is correct,
+but all parsing is done in the Tokenizer, which seems odd as it means that if the language changes,
+I have to change the Token interpretation in two places, the token and the tokenizer.
+
+Maybe I could buffer the string that's coming through the PositionedTextReader, and then each of the
+tokens can validate the buffer, and I can then choose the correct one to feed it to. Remember, tokens
+are validated only using regex essentially, nothing to do with position is kept
+
+One idea: Somehow feed the buffer from the textreader to all token types simultaneously, and the token with the longest
+string at the end wins? Maybe, would work but it means that they're all processing, which is going to be slow if we have a lot of
+tokens, and even slower if we can't find a way that isn't O(n^2) to do it.
+
+-------------------------
+     ACCEPTED ANSWER    
+-------------------------
+
+The thing to remember here is that once a token is found to be fed some invalid data, it's out of the game. This means most token types
+will be knocked out by the end of the first character (e.g: + being fed in would knock out all Tokens except IsStartingStateToken). Ok I
+think I'll do this one.
+
+-------------------------
+
+Another idea: Do the validation in tokenizer, and whilst the Tokens themselves provide some helper functions, the validation is left up
+to an external source. This could be useful if you ever need a Token to store some unconventional data, but I think this is bad design.
+Also, this is now a situation which has high coupling, although only over a specifically small area. Still, I don't like it, and I think
+it could be done better.
+
+
+VALIDLY DETECTING THE START OF AN FNSCRIPT EXPRESSION
+
+And I've also forgotten how I was going to validly detect the start of an FnScript expression. I suppose I'd do it at a bracket start,
+and then contextually throw away the other bits that I don't need. Alternatively I could have a character that uniquely identifies the start of
+an FnScript expression.
+
+(Perhaps it's the '[' character, which is then throw away the spaces in front of it before passing the script expression through to
+the FnScript compiler, same for strings or regexes?)

@@ -33,12 +33,13 @@
     <Compile Include="Compilation\InMemoryCompiler.cs" />
     <Compile Include="Compilation\Tokenizing\Token.cs" />
     <Compile Include="Compilation\Tokenizing\Tokenizer.cs" />
-    <Compile Include="Compilation\PositionedStreamReader.cs" />
+    <Compile Include="Compilation\PositionedTextReader.cs" />
     <Compile Include="Compilation\StreamPosition.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FSMTextFormat.txt" />
     <None Include="Scratchpad.txt" />
+    <None Include="Feature_Ideas.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FunctionScript">
@@ -48,6 +49,7 @@
   <ItemGroup>
     <Folder Include="Compilation\" />
     <Folder Include="Compilation\Tokenizing\" />
+    <Folder Include="Compilation\AST\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

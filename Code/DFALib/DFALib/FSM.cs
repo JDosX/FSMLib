@@ -4,12 +4,14 @@ using System.Collections.Generic;
 
 using FunctionScript;
 
+using FSMLib.Compilation;
+
 /// <summary>
 /// T represents the data type of the objects the DFA is traversing over
 /// (E.g: if you are trying to analyse a list of ints, the O would be List<int>
 /// and the T would be int)
 /// </summary>
-class FSM<T>
+public class FSM<T>
 {
 	protected State[] StartingStates;
 	protected FnVariable<T> CurrentItem;
@@ -108,7 +110,7 @@ class FSM<T>
 		return valid;
 	}
 
-  public static FSM<T> FromStream(TextReader reader) {
-    throw new NotImplementedException();
+  public static FSM<T> FromReader(TextReader reader) {
+    return InMemoryCompiler.FromReader<T>(reader);
   }
 }

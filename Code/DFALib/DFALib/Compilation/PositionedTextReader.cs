@@ -2,17 +2,17 @@
 using System.IO;
 
 namespace FSMLib.Compilation {
-  internal class PositionedStreamReader {
+  internal class PositionedTextReader {
 
-    private readonly StreamReader Reader;
+    private readonly TextReader Reader;
 
-    private readonly StreamPosition Position;
+    internal StreamPosition Position { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:DFALib.PositionedStreamReader"/> class.
     /// </summary>
     /// <param name="reader">The StreamReader to wrap.</param>
-    internal PositionedStreamReader(StreamReader reader) {
+    internal PositionedTextReader(TextReader reader) {
       Reader = reader;
       Position = new StreamPosition();
     }

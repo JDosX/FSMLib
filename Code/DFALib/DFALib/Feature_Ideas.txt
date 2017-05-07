@@ -1,0 +1,19 @@
+﻿FSM -> C# Transpiler
+====================
+
+FSM -> C# transpiler, so you don't have to dynamically load and process the FSM each time you run the software
+Will reduce performance foodprint on projects that don't need to have dynamically loaded FSMs
+
+
+
+Provide the name of the final state in an FSM traversal
+=======================================================
+
+- When specifying whether the FSM accepted or rejected the input, also provide the name of the state, either as the
+  return type or as an out variable, for example:
+  
+  bool Traverse(string input, out string finalState) -> where finalState is the final state the FSM landed on.
+  
+  							OR
+  
+  string Travsers(string input) -> where the result is "" if invalid, and the name of the string if a valid state.

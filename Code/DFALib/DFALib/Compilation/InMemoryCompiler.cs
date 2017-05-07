@@ -9,7 +9,7 @@ namespace FSMLib.Compilation
 {
   internal static class InMemoryCompiler
   {
-    internal static FSM<T> FromReader<T>(StreamReader reader)
+    internal static FSM<T> FromReader<T>(TextReader reader)
     {
       Tokenizer tokenizer = new Tokenizer();
       Token[] tokens = tokenizer.Tokenize(reader);

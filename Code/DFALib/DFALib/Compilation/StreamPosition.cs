@@ -1,4 +1,6 @@
 ﻿using System;
+
+
 namespace FSMLib.Compilation {
   internal class StreamPosition {
 
@@ -9,9 +11,17 @@ namespace FSMLib.Compilation {
 
     #endregion
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="T:FSMLib.Compilation.StreamPosition"/> class at position (1, 1).
+    /// </summary>
     internal StreamPosition() {
       ColumnNumber = 1;
       LineNumber = 1;
+    }
+
+    internal StreamPosition(StreamPosition other) {
+      ColumnNumber = other.ColumnNumber;
+      LineNumber = other.LineNumber;
     }
 
     // TODO: Write out documentation explaining why this works well, with reference to this example below:
@@ -30,6 +40,10 @@ namespace FSMLib.Compilation {
       } else {
         ColumnNumber++;
       }
+    }
+
+    public override String ToString() {
+      return string.Format("({0}, {1})", ColumnNumber, LineNumber);
     }
   }
 }
