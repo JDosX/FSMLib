@@ -67,7 +67,9 @@ namespace FSMLib.Compilation.Tokenizing
     private HashSet<Token> GenerateCompetingTokens(StreamPosition tokenStart) {
       return new HashSet<Token>() {
         new StartStateToken(tokenStart),
-        new AcceptingStateToken(tokenStart)
+        new AcceptingStateToken(tokenStart),
+        new ScopeOpenToken(tokenStart),
+        new ScopeCloseToken(tokenStart)
       };
     }
 

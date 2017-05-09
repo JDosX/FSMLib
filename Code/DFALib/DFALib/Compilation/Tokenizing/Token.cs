@@ -92,4 +92,18 @@ namespace FSMLib.Compilation.Tokenizing
   internal class AcceptingStateToken : SingleCharToken {
     internal AcceptingStateToken(StreamPosition tokenStart) : base(tokenStart, '*') { }
   }
+
+  /// <summary>
+  /// A token encapsulating a marker that indicates the opening of a new scope.
+  /// </summary>
+  internal class ScopeOpenToken : SingleCharToken {
+    internal ScopeOpenToken(StreamPosition tokenStart) : base(tokenStart, '{') { }
+  }
+
+  /// <summary>
+  /// A token encapsulating a marker that indicates the closing of an existing scope.
+  /// </summary>
+  internal class ScopeCloseToken : SingleCharToken {
+    internal ScopeCloseToken(StreamPosition tokenStart) : base(tokenStart, '}') { }
+  }
 }
