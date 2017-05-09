@@ -69,7 +69,8 @@ namespace FSMLib.Compilation.Tokenizing
         new StartStateToken(tokenStart),
         new AcceptingStateToken(tokenStart),
         new ScopeOpenToken(tokenStart),
-        new ScopeCloseToken(tokenStart)
+        new ScopeCloseToken(tokenStart),
+        new KeywordFSMToken(tokenStart)
       };
     }
 

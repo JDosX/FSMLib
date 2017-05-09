@@ -39,3 +39,6 @@ an FnScript expression.
 
 (Perhaps it's the '[' character, which is then throw away the spaces in front of it before passing the script expression through to
 the FnScript compiler, same for strings or regexes?)
+
+
+1248163264
