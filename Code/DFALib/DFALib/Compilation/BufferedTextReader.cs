@@ -53,6 +53,13 @@ namespace FSMLib.Compilation {
     }
 
     /// <summary>
+    /// Flushes the buffer up to the currently active Position of the BufferedTextReader (inclusive).
+    /// </summary>
+    internal void FlushBuffer() {
+      FlushBuffer(Position);
+    }
+
+    /// <summary>
     /// Flushes the buffer up to the specified StreamPosition (inclusive), and resets the head to the start of the buffer.
     /// TODO: always assumes input is valid. If invalid input is provided then shit will get fucked yo.
     /// </summary>
@@ -63,8 +70,9 @@ namespace FSMLib.Compilation {
       currentItem = StreamBuffer.First.Next;
       while (currentItem != null && currentItem.Value.Position.IsBeforeOrEqual(position)) {
         // TODO: Does this work or does it destroy the item?
+        LinkedListNode<BufferItem> nextItem = currentItem.Next;
         StreamBuffer.Remove(currentItem);
-        currentItem = currentItem.Next;
+        currentItem = nextItem;
       }
 
       // Reset the pointer into the buffer.

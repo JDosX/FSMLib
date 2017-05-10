@@ -55,31 +55,6 @@ namespace FSMLib.Compilation.Tokenizing {
     }
   }
 
-  internal abstract class SingleCharToken : Token {
-
-    char ValidChar;
-
-    internal SingleCharToken(StreamPosition tokenStart, char validChar) : base(tokenStart) {
-      ValidChar = validChar;
-    }
-
-    internal override FeedState Feed(char c, StreamPosition tokenEnd) {
-
-      if (State == FeedState.Start) {
-        if (c == ValidChar) {
-          Contents.Append(c);
-          TokenEnd = tokenEnd;
-          State = FeedState.Done;
-        } else {
-          // TODO: Does this methodology work?
-          State = FeedState.Invalid;
-        }
-      }
-                           
-      return State;
-    }
-  }
-
   internal abstract class DFAToken : Token {
     protected SimpleDFA<char> DFA;
     protected SimpleDFA<char>.Node CurrentNode;
@@ -140,28 +115,46 @@ namespace FSMLib.Compilation.Tokenizing {
   /// <summary>
   /// A token encapsulating a marker that indicates a starting state.
   /// </summary>
-  internal class StartStateToken : SingleCharToken {
-    internal StartStateToken(StreamPosition tokenStart) : base(tokenStart, '+') {}
+  internal class StartStateToken : SingleMatchToken {
+    internal StartStateToken(StreamPosition tokenStart) : base(tokenStart, "+") {}
   }
 
   /// <summary>
   /// A token encapsulating a marker that indicates an accepting state.
   /// </summary>
-  internal class AcceptingStateToken : SingleCharToken {
-    internal AcceptingStateToken(StreamPosition tokenStart) : base(tokenStart, '*') { }
+  internal class AcceptingStateToken : SingleMatchToken {
+    internal AcceptingStateToken(StreamPosition tokenStart) : base(tokenStart, "*") { }
   }
 
   /// <summary>
   /// A token encapsulating a marker that indicates the opening of a new scope.
   /// </summary>
-  internal class ScopeOpenToken : SingleCharToken {
-    internal ScopeOpenToken(StreamPosition tokenStart) : base(tokenStart, '{') { }
+  internal class ScopeOpenToken : SingleMatchToken {
+    internal ScopeOpenToken(StreamPosition tokenStart) : base(tokenStart, "{") { }
   }
 
   /// <summary>
   /// A token encapsulating a marker that indicates the closing of an existing scope.
   /// </summary>
-  internal class ScopeCloseToken : SingleCharToken {
-    internal ScopeCloseToken(StreamPosition tokenStart) : base(tokenStart, '}') { }
+  internal class ScopeCloseToken : SingleMatchToken {
+    internal ScopeCloseToken(StreamPosition tokenStart) : base(tokenStart, "}") { }
+  }
+
+  /// <summary>
+  /// A token encapsulating a marker that indicates the opening of a new scope.
+  /// </summary>
+  internal class SquareOpenToken : SingleMatchToken {
+    internal SquareOpenToken(StreamPosition tokenStart) : base(tokenStart, "[") { }
+  }
+
+  /// <summary>
+  /// A token encapsulating a marker that indicates the closing of an existing scope.
+  /// </summary>
+  internal class SquareCloseToken : SingleMatchToken {
+    internal SquareCloseToken(StreamPosition tokenStart) : base(tokenStart, "]") { }
+  }
+
+  internal class ArrowToken : SingleMatchToken {
+    internal ArrowToken(StreamPosition tokenStart) : base(tokenStart, "->") { }
   }
 }

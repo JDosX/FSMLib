@@ -31,12 +31,7 @@ namespace FSMLib.Compilation.Tokenizing
       while ((char)reader.Peek() != '\0')
       {
         Token token = NextToken(positionedReader);
-        if (token == null) {
-          // TODO: better handle this error detection
-          throw new ArgumentException("Content of the reader ain't right yo.");
-        } else {
-          tokens.Add(token);
-        }
+        tokens.Add(token);
       }
 
       return tokens.ToArray();
@@ -62,6 +57,13 @@ namespace FSMLib.Compilation.Tokenizing
       }
 
       Token longestToken = LongestToken(competingTokens);
+
+      // If we weren't able to find any valid tokens, this means we have a syntax error, throw
+      if (longestToken == null) {
+        // TODO: Make this error handling mechanism more robust/extensible.
+        throw new ArgumentException(String.Format("Invalid syntax at {0}", tokenStart.ToString()));
+      }
+
       reader.FlushBuffer(longestToken.TokenEnd);
 
       return longestToken;
@@ -73,7 +75,10 @@ namespace FSMLib.Compilation.Tokenizing
         new AcceptingStateToken(tokenStart),
         new ScopeOpenToken(tokenStart),
         new ScopeCloseToken(tokenStart),
-        new KeywordFSMToken(tokenStart)
+        new KeywordFSMToken(tokenStart),
+        new ArrowToken(tokenStart),
+        new SquareOpenToken(tokenStart),
+        new SquareCloseToken(tokenStart)
       };
     }
 
@@ -108,6 +113,8 @@ namespace FSMLib.Compilation.Tokenizing
       while (skipChars.Contains((char)reader.Peek())) {
         reader.Read();
       }
+
+      reader.FlushBuffer();        
     }
   }
 }
