@@ -33,7 +33,7 @@
     <Compile Include="Compilation\InMemoryCompiler.cs" />
     <Compile Include="Compilation\Tokenizing\Token.cs" />
     <Compile Include="Compilation\Tokenizing\Tokenizer.cs" />
-    <Compile Include="Compilation\PositionedTextReader.cs" />
+    <Compile Include="Compilation\BufferedTextReader.cs" />
     <Compile Include="Compilation\StreamPosition.cs" />
     <Compile Include="Compilation\Traversal\SimpleDFA.cs" />
   </ItemGroup>

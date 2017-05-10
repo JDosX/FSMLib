@@ -42,6 +42,26 @@ namespace FSMLib.Compilation {
       }
     }
 
+    internal StreamPosition NewAdvanced (char c) {
+      StreamPosition newPosition = new StreamPosition(this);
+      newPosition.Advance(c);
+
+      return newPosition;
+    }
+
+    /// <summary>
+    /// Whether this StreamPosition is before or equal to the provided one.
+    /// TODO: replace this with an overload of the <= operator when you have internet.
+    /// </summary>
+    /// <returns><c>true</c>, if or equal was befored, <c>false</c> otherwise.</returns>
+    /// <param name="position">Position.</param>
+    internal bool IsBeforeOrEqual(StreamPosition position) {
+      return (
+        LineNumber < position.LineNumber ||
+        LineNumber == position.LineNumber && ColumnNumber <= position.ColumnNumber
+      );
+    }
+
     public override String ToString() {
       return string.Format("({0}, {1})", ColumnNumber, LineNumber);
     }

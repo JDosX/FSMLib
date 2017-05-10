@@ -23,6 +23,8 @@ The thing to remember here is that once a token is found to be fed some invalid 
 will be knocked out by the end of the first character (e.g: + being fed in would knock out all Tokens except IsStartingStateToken). Ok I
 think I'll do this one.
 
+TODO: So what we know is that if one state is marked as done "done"
+
 -------------------------
 
 Another idea: Do the validation in tokenizer, and whilst the Tokens themselves provide some helper functions, the validation is left up

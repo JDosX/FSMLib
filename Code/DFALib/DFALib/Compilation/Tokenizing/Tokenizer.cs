@@ -25,7 +25,7 @@ namespace FSMLib.Compilation.Tokenizing
     /// </summary>
     /// <param name="reader">Stream.</param>
     internal Token[] Tokenize(TextReader reader) {
-      PositionedTextReader positionedReader = new PositionedTextReader(reader);
+      BufferedTextReader positionedReader = new BufferedTextReader(reader);
       List<Token> tokens = new List<Token>();
 
       while ((char)reader.Peek() != '\0')
@@ -42,7 +42,7 @@ namespace FSMLib.Compilation.Tokenizing
       return tokens.ToArray();
     }
 
-    internal Token NextToken(PositionedTextReader reader) {
+    internal Token NextToken(BufferedTextReader reader) {
       SkipReading(reader, WhiteSpaceChars);
 
       StreamPosition tokenStart = new StreamPosition(reader.Position);
@@ -61,7 +61,10 @@ namespace FSMLib.Compilation.Tokenizing
         competingTokens.RemoveWhere(checkedToken => checkedToken.State == Token.FeedState.Invalid);
       }
 
-      return LongestToken(competingTokens);
+      Token longestToken = LongestToken(competingTokens);
+      reader.FlushBuffer(longestToken.TokenEnd);
+
+      return longestToken;
     }
 
     private HashSet<Token> GenerateCompetingTokens(StreamPosition tokenStart) {
@@ -101,7 +104,7 @@ namespace FSMLib.Compilation.Tokenizing
       return longestToken;
     }
 
-    private static void SkipReading(PositionedTextReader reader, HashSet<char> skipChars) {
+    private static void SkipReading(BufferedTextReader reader, HashSet<char> skipChars) {
       while (skipChars.Contains((char)reader.Peek())) {
         reader.Read();
       }
