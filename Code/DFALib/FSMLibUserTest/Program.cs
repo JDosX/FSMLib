@@ -6,7 +6,9 @@ using FSMLib;
 namespace FSMLibUserTest {
   class MainClass {
     public static void Main(string[] args) {
-      FSM<string> fsm = FSM<string>.FromReader(new StringReader("fsm+++***->->+fsm"));
+      string str1 = "State1++fsm+**\"poopy butthole McGee\"'\\\''";
+      string str2 = "'a'";
+      FSM<string> fsm = FSM<string>.FromReader(new StringReader(str1));
     }
   }
 }

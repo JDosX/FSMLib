@@ -9,11 +9,6 @@ namespace FSMLib.Compilation.Tokenizing
   {
     #region Fields
 
-    private const string COMMENT_START = "//";
-    private const string TRANSITION_SEPARATOR = "->";
-    private const char INITIAL_STATE = '+';
-    private const char ACCEPTING_STATE = '*';
-
     private static readonly HashSet<char> WhiteSpaceChars = new HashSet<char>() {
       '\n', ' ', '\t'
     };
@@ -78,7 +73,11 @@ namespace FSMLib.Compilation.Tokenizing
         new KeywordFSMToken(tokenStart),
         new ArrowToken(tokenStart),
         new SquareOpenToken(tokenStart),
-        new SquareCloseToken(tokenStart)
+        new SquareCloseToken(tokenStart),
+        new CommaSeparatorToken(tokenStart),
+        new StateNameToken(tokenStart),
+        new StringToken(tokenStart),
+        new CharToken(tokenStart)
       };
     }
 

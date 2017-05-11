@@ -72,6 +72,16 @@ namespace FSMLib.Traversal {
         return true;
       }
 
+      internal T[] TryAddConnections(ICollection<T> connectors, Node connectedNode) {
+        List<T> failed = new List<T>();
+
+        foreach (T connector in connectors) {
+          if (!TryAddConnection(connector, connectedNode)) { failed.Add(connector); }
+        }
+
+        return failed.ToArray();
+      }
+
       internal Node GetConnection(T connector) {
         return Connections[connector];
       }

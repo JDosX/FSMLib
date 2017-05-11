@@ -86,6 +86,40 @@ namespace FSMLib.Compilation.Tokenizing {
 
       return State;
     }
+
+    /// <summary>
+    /// All the chars in the range [0, 127] (inclusive).
+    /// </summary>
+    /// <returns>The chars.</returns>
+    protected HashSet<char> AllChars() {
+      HashSet<char> allChars = new HashSet<char>();
+
+      for (char c = (char)0; c <= (char)127; c++) {
+        allChars.Add(c);
+      }
+
+      return allChars;
+    }
+
+    protected HashSet<char> AllCharsExcept(ICollection<char> exclusions) {
+      HashSet<char> allChars = AllChars();
+
+      foreach (char exclusion in exclusions) {
+        allChars.Remove(exclusion);
+      }
+
+      return allChars;
+    }
+
+    protected HashSet<char> AllCharsInRange(char min, char max) {
+      HashSet<char> allChars = new HashSet<char>();
+
+      for (char c = min; c <= max; c++) {
+        allChars.Add(c);
+      }
+
+      return allChars;
+    }
   }
 
   internal abstract class SingleMatchToken : DFAToken {
@@ -105,6 +139,70 @@ namespace FSMLib.Compilation.Tokenizing {
   }
 
   // TODO: Use reflection to make sure all of these are automatically added into Tokenizer.GenerateCompetingTokens
+
+  internal class StateNameToken : DFAToken {
+    internal StateNameToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node Head = DFA.Head;
+      SimpleDFA<char>.Node ValidName = new SimpleDFA<char>.Node(true);
+
+      HashSet<char> validStartingChars = new HashSet<char>();
+      validStartingChars.UnionWith(AllCharsInRange('A', 'Z'));
+      validStartingChars.UnionWith(AllCharsInRange('a', 'z'));
+      validStartingChars.Add('_');
+
+      HashSet<char> validFollowingChars = new HashSet<char>();
+      validFollowingChars.UnionWith(validStartingChars);
+      validFollowingChars.UnionWith(AllCharsInRange('0', '9'));
+
+      Head.TryAddConnections(validStartingChars, ValidName);
+      ValidName.TryAddConnections(validFollowingChars, ValidName);
+    }
+  }
+
+  // TODO: make sure to implement all escape characters (literal escape question mark and below not implemented):
+  // https://msdn.microsoft.com/en-us/library/h21280bw.aspx
+
+  internal class CharToken : DFAToken {
+    internal CharToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node Head = DFA.Head;
+      SimpleDFA<char>.Node CharStart    = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node EscapeSlash  = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node CharProvided = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node CharEnd      = new SimpleDFA<char>.Node(true);
+
+      char[] simpleEscapeCharacters = new char[] {
+        'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\'
+      };
+
+      Head.TryAddConnection('\'', CharStart);
+      CharStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '\'' }), CharProvided);
+      CharStart.TryAddConnection('\\', EscapeSlash);
+
+      EscapeSlash.TryAddConnections(simpleEscapeCharacters, CharProvided);
+
+      CharProvided.TryAddConnection('\'', CharEnd);
+    }
+  }
+
+  internal class StringToken : DFAToken {
+    internal StringToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node Head = DFA.Head;
+      SimpleDFA<char>.Node StringStart = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node EscapeSlash = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node StringEnd = new SimpleDFA<char>.Node(true);
+
+      char[] simpleEscapeCharacters = new char[] {
+        'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\'
+      };
+
+      Head.TryAddConnection('"', StringStart);
+      StringStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '"' }), StringStart);
+      StringStart.TryAddConnection('\\', EscapeSlash);
+      StringStart.TryAddConnection('"', StringEnd);
+
+      EscapeSlash.TryAddConnections(simpleEscapeCharacters, StringStart);
+    }
+  }
 
   internal class KeywordFSMToken : SingleMatchToken {
     internal const string KEYWORD = "fsm";
@@ -156,5 +254,9 @@ namespace FSMLib.Compilation.Tokenizing {
 
   internal class ArrowToken : SingleMatchToken {
     internal ArrowToken(StreamPosition tokenStart) : base(tokenStart, "->") { }
+  }
+
+  internal class CommaSeparatorToken : SingleMatchToken {
+    internal CommaSeparatorToken(StreamPosition tokenStart) : base(tokenStart, ",") { }
   }
 }
