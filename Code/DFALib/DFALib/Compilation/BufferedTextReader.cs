@@ -69,8 +69,10 @@ namespace FSMLib.Compilation {
 
       currentItem = StreamBuffer.First.Next;
       while (currentItem != null && currentItem.Value.Position.IsBeforeOrEqual(position)) {
-        // TODO: Does this work or does it destroy the item?
+        // Move the position of the first buffer node so it reflects the position before the first true buffered entry at
+        // the end of this flushing process.
         LinkedListNode<BufferItem> nextItem = currentItem.Next;
+        StreamBuffer.First.Value.Position = currentItem.Value.Position;
         StreamBuffer.Remove(currentItem);
         currentItem = nextItem;
       }

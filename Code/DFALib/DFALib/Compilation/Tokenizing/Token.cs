@@ -132,7 +132,7 @@ namespace FSMLib.Compilation.Tokenizing {
   internal abstract class MultiMatchToken : DFAToken {
 
     internal MultiMatchToken(StreamPosition tokenStart, ICollection<string> matches) : base(tokenStart) {
-      foreach(string match in matches) {
+      foreach (string match in matches) {
         DFA.AddDirectMatch(match.ToCharArray());
       }
     }
@@ -165,10 +165,10 @@ namespace FSMLib.Compilation.Tokenizing {
   internal class CharToken : DFAToken {
     internal CharToken(StreamPosition tokenStart) : base(tokenStart) {
       SimpleDFA<char>.Node Head = DFA.Head;
-      SimpleDFA<char>.Node CharStart    = new SimpleDFA<char>.Node(false);
-      SimpleDFA<char>.Node EscapeSlash  = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node CharStart = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node EscapeSlash = new SimpleDFA<char>.Node(false);
       SimpleDFA<char>.Node CharProvided = new SimpleDFA<char>.Node(false);
-      SimpleDFA<char>.Node CharEnd      = new SimpleDFA<char>.Node(true);
+      SimpleDFA<char>.Node CharEnd = new SimpleDFA<char>.Node(true);
 
       char[] simpleEscapeCharacters = new char[] {
         'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\'
@@ -201,6 +201,48 @@ namespace FSMLib.Compilation.Tokenizing {
       StringStart.TryAddConnection('"', StringEnd);
 
       EscapeSlash.TryAddConnections(simpleEscapeCharacters, StringStart);
+    }
+  }
+
+  internal class FnScriptToken : DFAToken {
+    internal FnScriptToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node head = DFA.Head;
+      SimpleDFA<char>.Node script = new SimpleDFA<char>.Node(false);
+
+      SimpleDFA<char>.Node scriptString = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node stringEscape = new SimpleDFA<char>.Node(false);
+
+      SimpleDFA<char>.Node scriptChar = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node charEscape = new SimpleDFA<char>.Node(false);
+
+      SimpleDFA<char>.Node scriptParameter = new SimpleDFA<char>.Node(false);
+
+      SimpleDFA<char>.Node scriptEnd = new SimpleDFA<char>.Node(true);
+
+      head.TryAddConnection('`', script);
+      script.TryAddConnections(AllCharsExcept(new char[] { '"', '\'', '[', '`' }), script);
+      script.TryAddConnection('"', scriptString);
+      script.TryAddConnection('\'', scriptChar);
+      script.TryAddConnection('[', scriptParameter);
+
+      // Strings in an Fnscript expression.
+      scriptString.TryAddConnections(AllCharsExcept(new char[] { '"', '\\' }), scriptString);
+      scriptString.TryAddConnection('\\', stringEscape);
+      scriptString.TryAddConnection('"', script);
+      stringEscape.TryAddConnections(AllChars(), scriptString);
+
+      // Chars in an Fnscript expression.
+      scriptChar.TryAddConnections(AllCharsExcept(new char[] { '\'', '\\' }), scriptChar);
+      scriptChar.TryAddConnection('\\', charEscape);
+      scriptChar.TryAddConnection('\'', script);
+      charEscape.TryAddConnections(AllChars(), scriptChar);
+
+      // FnScript Parameters.
+      scriptParameter.TryAddConnections(AllCharsExcept(new char[] { ']' }), scriptParameter);
+      scriptParameter.TryAddConnection(']', script);
+
+      // Ending FnScript Expression.
+      script.TryAddConnection('`', scriptEnd);
     }
   }
 
