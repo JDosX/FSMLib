@@ -40,3 +40,29 @@ Name_Of_FSM_2 {
 
 // could introduce line endings (;) into the FnScript syntax, which might be good for other reasons too.
 // 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

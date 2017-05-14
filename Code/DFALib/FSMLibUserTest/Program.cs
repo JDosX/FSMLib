@@ -8,6 +8,8 @@ namespace FSMLibUserTest {
     public static void Main(string[] args) {
       string str1 = "State1++fsm+**\"poopy butthole McGee\"'\\\''";
       string str2 = "'a'";
+
+
       FSM<string> fsm = FSM<string>.FromReader(new StringReader(str1));
     }
   }
