@@ -22,7 +22,7 @@ namespace FSMLib.Compilation.Tokenizing
     internal Token[] Tokenize(TextReader reader) {
       BufferedTextReader positionedReader = new BufferedTextReader(reader);
       List<Token> tokens = new List<Token>();
-      
+
       while (positionedReader.Peek() != -1) {
         Token token = NextToken(positionedReader);
         tokens.Add(token);
@@ -77,7 +77,9 @@ namespace FSMLib.Compilation.Tokenizing
         new StateNameToken(tokenStart),
         new StringToken(tokenStart),
         new CharToken(tokenStart),
-        new FnScriptToken(tokenStart)
+        new FnScriptToken(tokenStart),
+        new SingleLineCommentToken(tokenStart),
+        new MultiLineCommentToken(tokenStart)
       };
     }
 

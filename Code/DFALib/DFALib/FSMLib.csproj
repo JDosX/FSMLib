@@ -36,6 +36,8 @@
     <Compile Include="Compilation\BufferedTextReader.cs" />
     <Compile Include="Compilation\StreamPosition.cs" />
     <Compile Include="Compilation\Traversal\SimpleDFA.cs" />
+    <Compile Include="Compilation\AST\ASTNodes.cs" />
+    <Compile Include="Compilation\Parsing\Parser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FSMTextFormat.txt" />
@@ -52,6 +54,7 @@
     <Folder Include="Compilation\Tokenizing\" />
     <Folder Include="Compilation\AST\" />
     <Folder Include="Compilation\Traversal\" />
+    <Folder Include="Compilation\Parsing\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

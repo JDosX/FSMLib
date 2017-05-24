@@ -1,11 +1,12 @@
 ﻿Example of a DFA text format:
 
 FSM FloatDetector {
-   // + denotes initial state
-   // * denotes accepting state
-   // denotes line comment (this might cause a problem)
-   // fnscript expressions automatically determine and assessed by understanding the type of DFA that was
-   // created to read this state transition
+   <# + denotes initial state
+      * denotes accepting state
+      # denotes line comment (this might cause a problem)
+        fnscript expressions automatically determine and assessed by understanding the type of DFA that was
+        created to read this state transition
+   #>
 
    +State1 -> { "string transition" -> State2 }
               { /regex transition/  -> State3, State4 }

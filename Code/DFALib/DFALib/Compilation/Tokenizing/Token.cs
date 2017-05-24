@@ -246,6 +246,35 @@ namespace FSMLib.Compilation.Tokenizing {
     }
   }
 
+  internal class SingleLineCommentToken : DFAToken {
+    internal SingleLineCommentToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node head = DFA.Head;
+      SimpleDFA<char>.Node comment = new SimpleDFA<char>.Node(true);
+
+      head.TryAddConnection('#', comment);
+      comment.TryAddConnections(AllCharsExcept(new char[] {'\n'}), comment);
+    }
+  }
+
+  internal class MultiLineCommentToken : DFAToken {
+    internal MultiLineCommentToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node               head = DFA.Head;
+      SimpleDFA<char>.Node      commentPrefix = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node            comment = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node commentSuffixStart = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node   commentSuffixEnd = new SimpleDFA<char>.Node(true);
+
+      head.TryAddConnection('<', commentPrefix);
+      commentPrefix.TryAddConnection('#', comment);
+
+      comment.TryAddConnections(AllCharsExcept(new char[] { '#' }), comment);
+      comment.TryAddConnection('#', commentSuffixStart);
+
+      commentSuffixStart.TryAddConnections(AllCharsExcept(new char[] { '>' }), comment);
+      commentSuffixStart.TryAddConnection('>', commentSuffixEnd);
+    }
+  }
+
   internal class KeywordFSMToken : SingleMatchToken {
     internal const string KEYWORD = "fsm";
 
