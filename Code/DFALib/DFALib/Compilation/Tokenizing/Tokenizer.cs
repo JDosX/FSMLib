@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace FSMLib.Compilation.Tokenizing
 {
-  internal class Tokenizer : ITokenProvider
+  internal class Tokenizer : TokenProvider
   {
     #region Fields
 
@@ -13,30 +13,35 @@ namespace FSMLib.Compilation.Tokenizing
       '\n', ' ', '\t'
     };
 
+    private readonly BufferedTextReader Reader;
+
     #endregion
+
+    internal Tokenizer(BufferedTextReader reader) {
+      Reader = reader;
+    }
 
     /// <summary>
     /// Converts the incoming data from a stream into a tokenized representation. Returns null once all the items in
     /// the stream have been read.
     /// </summary>
-    /// <param name="reader">Stream tokens are read from.</param>
-    public Token NextToken(BufferedTextReader reader) {
+    protected override Token ProducerRead() {
       // If the stream is exhausted.
       // TODO: This might not be the best way to do it. If the stream results in null then you may have ended up with
       // invalid data. We need to think about how to gracefully structure exception throwing.
-      if (reader.Peek() == -1) {
+      if (Reader.Peek() == -1) {
         return null;
       }
 
-      SkipReading(reader, WhiteSpaceChars);
+      SkipReading(Reader, WhiteSpaceChars);
 
-      StreamPosition tokenStart = new StreamPosition(reader.Position);
+      StreamPosition tokenStart = new StreamPosition(Reader.Position);
       HashSet<Token> competingTokens = GenerateCompetingTokens(tokenStart);
 
       while (!AllTokensDone(competingTokens)) {
 
-        char c = (char)reader.Read();
-        StreamPosition tokenEnd = new StreamPosition(reader.Position);
+        char c = (char)Reader.Read();
+        StreamPosition tokenEnd = new StreamPosition(Reader.Position);
 
         foreach (Token token in competingTokens) {
           token.Feed(c, tokenEnd);
@@ -54,9 +59,25 @@ namespace FSMLib.Compilation.Tokenizing
         throw new ArgumentException(String.Format("Invalid syntax at {0}", tokenStart.ToString()));
       }
 
-      reader.FlushBuffer(longestToken.TokenEnd);
+      Reader.FlushBuffer(longestToken.TokenEnd);
 
       return longestToken;
+    }
+
+    protected override Token ProducerPeek() {
+      // Perform a read and then add it to the end of the buffer
+      // without incrementing the current node. This way, in future
+      // peeks, this value will just be read off the back without any
+      // further reads.
+      Token token = ProducerRead();
+      StreamPosition position = AdvancePosition(token);
+      ProducerBuffer.AddLast(new BufferItem(token, position));
+
+      return token;
+    }
+
+    protected override StreamPosition AdvancePosition(Token nextStreamValue) {
+      return new StreamPosition(nextStreamValue.TokenStart);
     }
 
     private HashSet<Token> GenerateCompetingTokens(StreamPosition tokenStart) {

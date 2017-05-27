@@ -13,10 +13,10 @@ namespace FSMLib.Compilation
     internal static FSM<T> FromReader<T>(TextReader reader)
     {
       BufferedTextReader positionedReader = new BufferedTextReader(reader);
-      Tokenizer tokenizer = new Tokenizer();
-      Parser parser = new Parser();
+      Tokenizer tokenizer = new Tokenizer(positionedReader);
+      Parser parser = new Parser(tokenizer);
 
-      parser.ParseTokens(tokenizer, positionedReader);
+      parser.ParseTokens();
 
       return null;
     }

@@ -1,25 +1,24 @@
 ﻿using System;
 
-
 namespace FSMLib.Compilation {
-  internal class StreamPosition {
+  public class StreamPosition {
 
     #region Fields
 
-    internal int ColumnNumber { get; private set; }
-    internal int   LineNumber { get; private set; }
+    public int ColumnNumber { get; private set; }
+    public int   LineNumber { get; private set; }
 
     #endregion
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:FSMLib.Compilation.StreamPosition"/> class at position (1, 1).
     /// </summary>
-    internal StreamPosition() {
+    public StreamPosition() {
       ColumnNumber = 1;
       LineNumber = 1;
     }
 
-    internal StreamPosition(StreamPosition other) {
+    public StreamPosition(StreamPosition other) {
       ColumnNumber = other.ColumnNumber;
       LineNumber = other.LineNumber;
     }
@@ -33,7 +32,7 @@ namespace FSMLib.Compilation {
     // c       4
     // Error: col 1-4
 
-    internal void Advance (char c) {
+    public void Advance (char c) {
       if (c == '\n') {
         LineNumber++;
         ColumnNumber = 1;
@@ -42,7 +41,7 @@ namespace FSMLib.Compilation {
       }
     }
 
-    internal StreamPosition NewAdvanced (char c) {
+    public StreamPosition NewAdvanced (char c) {
       StreamPosition newPosition = new StreamPosition(this);
       newPosition.Advance(c);
 
@@ -55,7 +54,7 @@ namespace FSMLib.Compilation {
     /// </summary>
     /// <returns><c>true</c>, if or equal was befored, <c>false</c> otherwise.</returns>
     /// <param name="position">Position.</param>
-    internal bool IsBeforeOrEqual(StreamPosition position) {
+    public bool IsBeforeOrEqual(StreamPosition position) {
       return (
         LineNumber < position.LineNumber ||
         LineNumber == position.LineNumber && ColumnNumber <= position.ColumnNumber

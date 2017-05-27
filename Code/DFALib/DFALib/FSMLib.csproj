@@ -38,7 +38,7 @@
     <Compile Include="Compilation\Traversal\SimpleDFA.cs" />
     <Compile Include="Compilation\AST\ASTNodes.cs" />
     <Compile Include="Compilation\Parsing\Parser.cs" />
-    <Compile Include="Compilation\Tokenizing\ITokenProvider.cs" />
+    <Compile Include="Compilation\Tokenizing\TokenProvider.cs" />
     <Compile Include="Compilation\BufferedProducer.cs" />
   </ItemGroup>
   <ItemGroup>
