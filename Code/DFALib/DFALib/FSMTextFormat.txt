@@ -10,6 +10,7 @@ FSM FloatDetector {
    +State1 -> { "string transition" -> State2 }
               { /regex transition/  -> State3, State4 }
               { `[str] == 3`        -> State4, State5, State6 }
+    State2 -> {}
 
   +*State2 -> etc....
 }

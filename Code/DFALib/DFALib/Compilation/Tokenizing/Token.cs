@@ -311,20 +311,6 @@ namespace FSMLib.Compilation.Tokenizing {
     internal ScopeCloseToken(StreamPosition tokenStart) : base(tokenStart, "}") { }
   }
 
-  /// <summary>
-  /// A token encapsulating a marker that indicates the opening of a new scope.
-  /// </summary>
-  internal class SquareOpenToken : SingleMatchToken {
-    internal SquareOpenToken(StreamPosition tokenStart) : base(tokenStart, "[") { }
-  }
-
-  /// <summary>
-  /// A token encapsulating a marker that indicates the closing of an existing scope.
-  /// </summary>
-  internal class SquareCloseToken : SingleMatchToken {
-    internal SquareCloseToken(StreamPosition tokenStart) : base(tokenStart, "]") { }
-  }
-
   internal class ArrowToken : SingleMatchToken {
     internal ArrowToken(StreamPosition tokenStart) : base(tokenStart, "->") { }
   }

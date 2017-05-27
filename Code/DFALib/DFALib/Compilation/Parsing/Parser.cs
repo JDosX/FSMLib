@@ -76,7 +76,7 @@ namespace FSMLib.Compilation.Parsing {
       bool isStarting = false;
       bool isAccepting = false;
       string stateName;
-      LinkedList<TransitionNode> transitions;
+      LinkedList<ITransitionNode> transitions;
 
       // TODO: Parse the StateName and do the rest of the things.
 
@@ -102,18 +102,19 @@ namespace FSMLib.Compilation.Parsing {
       if (token is StateNameToken) {
         stateName = token.GetSanitizedContent();
       } else {
-        throw new ArgumentException("Shit a state name was expected here yo");
+        throw new ArgumentException("Shit a state name was expected here yo.");
       }
 
       // ->
       token = NextToken();
       if (!(token is ArrowToken)) {
-        throw new ArgumentException("Aww shit an arrow token was expected");
+        throw new ArgumentException("Aww shit an arrow token was expected.");
       }
 
       // Transitions
       transitions = ParseTransitionList();
 
+      Tokenizer.FlushBuffer();
       return new StateDeclNode(isStarting, isAccepting, stateName, transitions);
     }
 
@@ -127,8 +128,36 @@ namespace FSMLib.Compilation.Parsing {
 
     #endregion
 
-    private LinkedList<TransitionNode> ParseTransitionList() {
-      throw new NotImplementedException();
+    private LinkedList<ITransitionNode> ParseTransitionList() {
+      LinkedList<ITransitionNode> Transitions = new LinkedList<ITransitionNode>();
+
+      while (Tokenizer.Peek() is ScopeOpenToken) {
+        ITransitionNode transition = ParseTransition();
+        if (!(transition is NullTransitionNode)) {
+          Transitions.AddLast(transition);
+        }
+      }
+
+      return Transitions;
+    }
+
+    private ITransitionNode ParseTransition() {
+      ITransitionNode transitionNode;
+
+      Token token = NextToken();
+      if (!(token is ScopeOpenToken)) {
+        throw new ArgumentException("Scope not opened here yo.");
+      }
+
+      token = NextToken();
+      if (token is ScopeCloseToken) {
+        transitionNode = new NullTransitionNode();
+      } else {
+        throw new NotImplementedException("TODO: Implement this.");
+      }
+
+      Tokenizer.FlushBuffer();
+      return transitionNode;
     }
 
     /// <summary>

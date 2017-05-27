@@ -23,15 +23,15 @@ namespace FSMLib.Compilation.AST {
     internal bool Accepting;
     internal string StateName;
 
-    internal LinkedList<TransitionNode> Transitions;
+    internal LinkedList<ITransitionNode> Transitions;
 
     internal StateDeclNode(
-      bool starting, bool accepting, string stateName, ICollection<TransitionNode> transitions
+      bool starting, bool accepting, string stateName, ICollection<ITransitionNode> transitions
     ) {
       Starting = starting;
       Accepting = accepting;
       StateName = stateName;
-      Transitions = new LinkedList<TransitionNode>(transitions);
+      Transitions = new LinkedList<ITransitionNode>(transitions);
     }
   }
 
@@ -67,14 +67,18 @@ namespace FSMLib.Compilation.AST {
     }
   }
 
-  internal sealed class TransitionNode : IASTNode {
+  internal interface ITransitionNode : IASTNode {}
+
+  internal sealed class NullTransitionNode : ITransitionNode {}
+
+  internal sealed class FullTransitionNode : ITransitionNode {
     internal ITransitionFunctionNode TransitionFunction;
 
     // TODO: consider making a StateNameNode for this purpose, makes it a little
     // more rigid than just strings.
     internal LinkedList<string> GoalStateList;
 
-    internal TransitionNode (ITransitionFunctionNode transitionFunction, ICollection<string> goalStateList) {
+    internal FullTransitionNode(ITransitionFunctionNode transitionFunction, ICollection<string> goalStateList) {
       TransitionFunction = transitionFunction;
       GoalStateList = new LinkedList<string>(goalStateList);
     }

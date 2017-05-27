@@ -88,8 +88,6 @@ namespace FSMLib.Compilation.Tokenizing
         new ScopeCloseToken(tokenStart),
         new KeywordFSMToken(tokenStart),
         new ArrowToken(tokenStart),
-        new SquareOpenToken(tokenStart),
-        new SquareCloseToken(tokenStart),
         new CommaSeparatorToken(tokenStart),
         new StateNameToken(tokenStart),
         new StringToken(tokenStart),
