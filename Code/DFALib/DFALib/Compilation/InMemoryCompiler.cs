@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using FSMLib.Compilation.Tokenizing;
+using FSMLib.Compilation.Parsing;
 
 namespace FSMLib.Compilation
 {
@@ -11,10 +12,12 @@ namespace FSMLib.Compilation
   {
     internal static FSM<T> FromReader<T>(TextReader reader)
     {
+      BufferedTextReader positionedReader = new BufferedTextReader(reader);
       Tokenizer tokenizer = new Tokenizer();
-      Token[] tokens = tokenizer.Tokenize(reader);
+      Parser parser = new Parser();
 
-      // TODO: finish.
+      parser.ParseTokens(tokenizer, positionedReader);
+
       return null;
     }
   }

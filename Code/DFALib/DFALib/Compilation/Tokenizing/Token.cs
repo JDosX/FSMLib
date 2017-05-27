@@ -2,7 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 
-using FSMLib.Traversal;
+using FSMLib.Compilation.Traversal;
 
 namespace FSMLib.Compilation.Tokenizing {
   internal abstract class Token {

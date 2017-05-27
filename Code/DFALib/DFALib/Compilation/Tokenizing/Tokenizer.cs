@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace FSMLib.Compilation.Tokenizing
 {
-  internal class Tokenizer
+  internal class Tokenizer : ITokenProvider
   {
     #region Fields
 
@@ -16,22 +16,18 @@ namespace FSMLib.Compilation.Tokenizing
     #endregion
 
     /// <summary>
-    /// Converts the incoming data from a stream into a tokenized representation.
+    /// Converts the incoming data from a stream into a tokenized representation. Returns null once all the items in
+    /// the stream have been read.
     /// </summary>
-    /// <param name="reader">Stream.</param>
-    internal Token[] Tokenize(TextReader reader) {
-      BufferedTextReader positionedReader = new BufferedTextReader(reader);
-      List<Token> tokens = new List<Token>();
-
-      while (positionedReader.Peek() != -1) {
-        Token token = NextToken(positionedReader);
-        tokens.Add(token);
+    /// <param name="reader">Stream tokens are read from.</param>
+    public Token NextToken(BufferedTextReader reader) {
+      // If the stream is exhausted.
+      // TODO: This might not be the best way to do it. If the stream results in null then you may have ended up with
+      // invalid data. We need to think about how to gracefully structure exception throwing.
+      if (reader.Peek() == -1) {
+        return null;
       }
 
-      return tokens.ToArray();
-    }
-
-    internal Token NextToken(BufferedTextReader reader) {
       SkipReading(reader, WhiteSpaceChars);
 
       StreamPosition tokenStart = new StreamPosition(reader.Position);

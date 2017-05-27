@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FSMLib.Traversal {
+namespace FSMLib.Compilation.Traversal {
   internal class SimpleDFA<T> {
 
     internal readonly Node Head;
