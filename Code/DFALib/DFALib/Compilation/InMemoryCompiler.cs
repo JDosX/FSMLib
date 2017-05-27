@@ -16,7 +16,7 @@ namespace FSMLib.Compilation
       Tokenizer tokenizer = new Tokenizer(positionedReader);
       Parser parser = new Parser(tokenizer);
 
-      parser.ParseTokens();
+      parser.ParseFSM();
 
       return null;
     }

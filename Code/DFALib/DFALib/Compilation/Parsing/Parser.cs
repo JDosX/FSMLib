@@ -29,8 +29,16 @@ namespace FSMLib.Compilation.Parsing {
         throw new ArgumentException("no starting fsm keyword.");
       }
 
+      Token token = DestructiveNextToken();
+      string name;
+      if (token is StateNameToken) {
+        name = token.GetSanitizedContent();
+      } else {
+        throw new ArgumentException("No valid state name yo");
+      }
+
       // {
-      if (!(DestructiveNextToken() is ScopeOpenToken)) {
+        if (!(DestructiveNextToken() is ScopeOpenToken)) {
         throw new ArgumentException("no scope open token.");
       }
 
@@ -42,7 +50,7 @@ namespace FSMLib.Compilation.Parsing {
         throw new ArgumentException("no scope close token.");
       }
 
-      return new FSMNode(stateDeclList);
+      return new FSMNode(name, stateDeclList);
     }
 
     #region Parsing State Declataions
@@ -65,21 +73,48 @@ namespace FSMLib.Compilation.Parsing {
       // *StateName
       // *+StateName
 
-      bool startingState;
-      bool acceptingState;
+      bool isStarting = false;
+      bool isAccepting = false;
+      string stateName;
+      LinkedList<TransitionNode> transitions;
+
       // TODO: Parse the StateName and do the rest of the things.
 
+      // + and *.
       Token token = NextToken();
       if (token is StartStateToken) {
-        startingState = true;
-
+        isStarting = true;
+        token = NextToken();
+        if (token is AcceptingStateToken) {
+          isAccepting = true;
+          token = NextToken();
+        }
       } else if (token is AcceptingStateToken) {
-        acceptingState = true;
-      } else if (token is StateNameNode) {
-
-      } else {
-        throw new ArgumentException("yo you didn't have a valid state declaration right at the start.");
+        isAccepting = true;
+        token = NextToken();
+        if (token is StartStateToken) {
+          isStarting = true;
+          token = NextToken();
+        }
       }
+
+      // State Name.
+      if (token is StateNameToken) {
+        stateName = token.GetSanitizedContent();
+      } else {
+        throw new ArgumentException("Shit a state name was expected here yo");
+      }
+
+      // ->
+      token = NextToken();
+      if (!(token is ArrowToken)) {
+        throw new ArgumentException("Aww shit an arrow token was expected");
+      }
+
+      // Transitions
+      transitions = ParseTransitionList();
+
+      return new StateDeclNode(isStarting, isAccepting, stateName, transitions);
     }
 
     private bool IsStateDeclStartToken(Token token) {
@@ -91,6 +126,10 @@ namespace FSMLib.Compilation.Parsing {
     }
 
     #endregion
+
+    private LinkedList<TransitionNode> ParseTransitionList() {
+      throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Returns the next Token, skipping over single and multiline comment tokens.

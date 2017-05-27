@@ -45,8 +45,10 @@ namespace FSMLib.Compilation.Tokenizing {
     /// <summary>
     /// Removes any marker characters from the provided string, leaving only the raw content
     /// </summary>
-    /// <param name="content">Initial content string to sanitize.</param>
-    protected virtual string GetSanitizedContent(string content) {
+    internal virtual string GetSanitizedContent() {
+      // TODO: Consider DFA implementation for sanitizing content. E.g:
+      // use a DFA with event handlers to build the sanitised content
+      // representation during compilation.
       return Contents.ToString();
     }
 
