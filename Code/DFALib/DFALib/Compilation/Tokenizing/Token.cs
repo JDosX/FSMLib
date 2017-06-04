@@ -45,7 +45,7 @@ namespace FSMLib.Compilation.Tokenizing {
     /// <summary>
     /// Removes any marker characters from the provided string, leaving only the raw content
     /// </summary>
-    internal virtual string GetSanitizedContent() {
+    internal string ContentToString() {
       // TODO: Consider DFA implementation for sanitizing content. E.g:
       // use a DFA with event handlers to build the sanitised content
       // representation during compilation.
@@ -68,15 +68,15 @@ namespace FSMLib.Compilation.Tokenizing {
 
     internal override FeedState Feed(char c, StreamPosition tokenEnd) {
       if (State != FeedState.Invalid || State != FeedState.Done) {
-        SimpleDFA<char>.Node nextNode = CurrentNode.TryGetConnection(c);
+        SimpleDFA<char>.Transition nextTransition = CurrentNode.TryGetConnection(c);
 
         // If next char is invalid
         // TODO: does this mean that there must always be a next character in order for this traversal to work? What
         // happens if this reaches the end of the file and there is no newline character to provide the next char to
         // make this work?
-        if (nextNode != null) {
+        if (nextTransition != null) {
           State = FeedState.InProgress;
-          CurrentNode = nextNode;
+          CurrentNode = nextTransition.Destination;
           Contents.Append(c);
           TokenEnd = tokenEnd;
         } else if (CurrentNode.Accepting) {
@@ -203,6 +203,28 @@ namespace FSMLib.Compilation.Tokenizing {
       StringStart.TryAddConnection('"', StringEnd);
 
       EscapeSlash.TryAddConnections(simpleEscapeCharacters, StringStart);
+    }
+  }
+
+  internal class RegexToken : DFAToken {
+    internal RegexToken(StreamPosition tokenStart) : base(tokenStart) {
+      SimpleDFA<char>.Node Head = DFA.Head;
+      SimpleDFA<char>.Node RegexStart = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node EscapeSlash = new SimpleDFA<char>.Node(false);
+      SimpleDFA<char>.Node RegexEnd = new SimpleDFA<char>.Node(true);
+
+      // Note: the / character is added here because it's used as the delimiter for regex. It's not
+      // actually a system-wide escape character
+      char[] simpleEscapeCharacters = new char[] {
+        'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\', '/'
+      };
+
+      Head.TryAddConnection('/', RegexStart);
+      RegexStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '/' }), RegexStart);
+      RegexStart.TryAddConnection('\\', EscapeSlash);
+      RegexStart.TryAddConnection('/', RegexEnd);
+
+      EscapeSlash.TryAddConnections(simpleEscapeCharacters, RegexStart);
     }
   }
 

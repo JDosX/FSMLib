@@ -53,7 +53,7 @@ namespace FSMLib.Compilation.Tokenizing
 
       Token longestToken = LongestToken(competingTokens);
 
-      // If we weren't able to find any valid tokens, this means we have a syntax error, throw
+      // If we weren't able to find any valid tokens, this means we have a syntax error, throw.
       if (longestToken == null) {
         // TODO: Make this error handling mechanism more robust/extensible.
         throw new ArgumentException(String.Format("Invalid syntax at {0}", tokenStart.ToString()));
@@ -76,6 +76,16 @@ namespace FSMLib.Compilation.Tokenizing
       return token;
     }
 
+    /// <inheritdoc/>
+    protected override bool Keep(Token next) {
+      // Filter out only comments.
+      if (next is SingleLineCommentToken || next is MultiLineCommentToken) {
+        return false;
+      }
+
+      return true;
+    }
+
     protected override StreamPosition AdvancePosition(Token nextStreamValue) {
       return new StreamPosition(nextStreamValue.TokenStart);
     }
@@ -92,6 +102,7 @@ namespace FSMLib.Compilation.Tokenizing
         new StateNameToken(tokenStart),
         new StringToken(tokenStart),
         new CharToken(tokenStart),
+        new RegexToken(tokenStart),
         new FnScriptToken(tokenStart),
         new SingleLineCommentToken(tokenStart),
         new MultiLineCommentToken(tokenStart)

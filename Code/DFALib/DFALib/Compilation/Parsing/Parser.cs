@@ -25,20 +25,20 @@ namespace FSMLib.Compilation.Parsing {
     /// <param name="reader">BufferedTextReader to tokenize.</param>
     internal FSMNode ParseFSM() {
       // fsm
-      if (!(DestructiveNextToken() is KeywordFSMToken)) {
+      if (!(DestructiveReadToken() is KeywordFSMToken)) {
         throw new ArgumentException("no starting fsm keyword.");
       }
 
-      Token token = DestructiveNextToken();
+      Token token = DestructiveReadToken();
       string name;
       if (token is StateNameToken) {
-        name = token.GetSanitizedContent();
+        name = token.ContentToString();
       } else {
         throw new ArgumentException("No valid state name yo");
       }
 
       // {
-        if (!(DestructiveNextToken() is ScopeOpenToken)) {
+        if (!(DestructiveReadToken() is ScopeOpenToken)) {
         throw new ArgumentException("no scope open token.");
       }
 
@@ -46,7 +46,7 @@ namespace FSMLib.Compilation.Parsing {
       ICollection<StateDeclNode> stateDeclList = ParseStateDeclList();
 
       // }
-      if (!(DestructiveNextToken() is ScopeCloseToken)) {
+      if (!(DestructiveReadToken() is ScopeCloseToken)) {
         throw new ArgumentException("no scope close token.");
       }
 
@@ -75,44 +75,47 @@ namespace FSMLib.Compilation.Parsing {
 
       bool isStarting = false;
       bool isAccepting = false;
-      string stateName;
-      LinkedList<ITransitionNode> transitions;
+      StateNameNode stateName;
+      LinkedList<TransitionNode> transitions;
 
       // TODO: Parse the StateName and do the rest of the things.
 
       // + and *.
-      Token token = NextToken();
+      Token token = Tokenizer.Read();
       if (token is StartStateToken) {
         isStarting = true;
-        token = NextToken();
+        token = Tokenizer.Read();
         if (token is AcceptingStateToken) {
           isAccepting = true;
-          token = NextToken();
+          token = Tokenizer.Read();
         }
       } else if (token is AcceptingStateToken) {
         isAccepting = true;
-        token = NextToken();
+        token = Tokenizer.Read();
         if (token is StartStateToken) {
           isStarting = true;
-          token = NextToken();
+          token = Tokenizer.Read();
         }
       }
 
       // State Name.
       if (token is StateNameToken) {
-        stateName = token.GetSanitizedContent();
+        stateName = new StateNameNode(token.ContentToString());
       } else {
         throw new ArgumentException("Shit a state name was expected here yo.");
       }
 
       // ->
-      token = NextToken();
+      token = Tokenizer.Read();
       if (!(token is ArrowToken)) {
         throw new ArgumentException("Aww shit an arrow token was expected.");
       }
 
       // Transitions
       transitions = ParseTransitionList();
+      if (transitions.Count == 0) {
+        throw new ArgumentException("Fuark man why u no put any transition functions.");
+      }
 
       Tokenizer.FlushBuffer();
       return new StateDeclNode(isStarting, isAccepting, stateName, transitions);
@@ -128,52 +131,80 @@ namespace FSMLib.Compilation.Parsing {
 
     #endregion
 
-    private LinkedList<ITransitionNode> ParseTransitionList() {
-      LinkedList<ITransitionNode> Transitions = new LinkedList<ITransitionNode>();
+    private LinkedList<TransitionNode> ParseTransitionList() {
+      LinkedList<TransitionNode> Transitions = new LinkedList<TransitionNode>();
 
       while (Tokenizer.Peek() is ScopeOpenToken) {
-        ITransitionNode transition = ParseTransition();
-        if (!(transition is NullTransitionNode)) {
-          Transitions.AddLast(transition);
-        }
+        Transitions.AddLast(ParseTransition());
       }
 
       return Transitions;
     }
 
-    private ITransitionNode ParseTransition() {
-      ITransitionNode transitionNode;
-
-      Token token = NextToken();
+    private TransitionNode ParseTransition() {
+      Token token = Tokenizer.Read();
       if (!(token is ScopeOpenToken)) {
         throw new ArgumentException("Scope not opened here yo.");
       }
 
-      token = NextToken();
-      if (token is ScopeCloseToken) {
-        transitionNode = new NullTransitionNode();
+      // Transition Function.
+      token = Tokenizer.Read();
+      TransitionFunctionNode functionNode = new TransitionFunctionNode();
+      if (token is CharToken) {
+        functionNode.TransitionType = TransitionFunctionNode.TransitionTypes.Char;
+        functionNode.TransitionFunction = token.ContentToString(); 
+      } else if (token is StringToken) {
+        functionNode.TransitionType = TransitionFunctionNode.TransitionTypes.String;
+        functionNode.TransitionFunction = token.ContentToString();
+      } else if (token is RegexToken) {
+        functionNode.TransitionType = TransitionFunctionNode.TransitionTypes.Regex;
+        functionNode.TransitionFunction = token.ContentToString();
+      } else if (token is FnScriptToken) {
+        functionNode.TransitionType = TransitionFunctionNode.TransitionTypes.FunctionScript;
+        functionNode.TransitionFunction = token.ContentToString();
       } else {
-        throw new NotImplementedException("TODO: Implement this.");
+        throw new ArgumentException("fuar you didn't put a valid transition function in here didya?");
+      }
+
+      // ->
+      if (!(Tokenizer.Read() is ArrowToken)) {
+        throw new ArgumentException("whoah man you forgot the arrow token here");
+      }
+
+      // Destination State List
+      LinkedList<StateNameNode> goalStateList = ParseStateNameList();
+      if (goalStateList.Count == 0) {
+        throw new ArgumentException("shit bro you forgot your destination list");
       }
 
       Tokenizer.FlushBuffer();
-      return transitionNode;
+      return new TransitionNode(functionNode, goalStateList);
     }
 
-    /// <summary>
-    /// Returns the next Token, skipping over single and multiline comment tokens.
-    /// </summary>
-    private Token NextToken() {
-      Token token = Tokenizer.Read();
-      while (token is SingleLineCommentToken || token is MultiLineCommentToken) {
-        token = Tokenizer.Read();
+    private LinkedList<StateNameNode> ParseStateNameList() {
+      LinkedList<StateNameNode> stateNames = new LinkedList<StateNameNode>();
+
+      // StateName1
+      if (Tokenizer.Peek() is StateNameToken) {
+        stateNames.AddLast(new StateNameNode(Tokenizer.Read().ContentToString()));
+
+        // , StateName2, StateName3 ...
+        while (Tokenizer.Peek() is CommaSeparatorToken) {
+          Tokenizer.Read(); // eat the comma
+          Token token = Tokenizer.Read();
+          if (token is StateNameToken) {
+            stateNames.AddLast(new StateNameNode(token.ContentToString()));
+          } else {
+            throw new ArgumentException("aww man you put in a comma but no next state.");
+          }
+        }
       }
 
-      return token;
+      return stateNames;
     }
 
-    private Token DestructiveNextToken() {
-      Token token = NextToken();
+    private Token DestructiveReadToken() {
+      Token token = Tokenizer.Read();
       Tokenizer.FlushBuffer();
 
       return token;

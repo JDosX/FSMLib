@@ -19,6 +19,12 @@ namespace FSMLib.Compilation {
     protected abstract StreamPosition AdvancePosition(T nextStreamValue);
     #endregion
 
+    #region Virtual Fields
+    protected virtual bool Keep(T next) {
+      return true;
+    }
+    #endregion
+
     public BufferedProducer(T nullStart) {
       // TODO: Consider blocking spurious reads when EOF data starts coming through
       // The way it is right now, every time you do a read at EOF, another EOF token
@@ -36,6 +42,13 @@ namespace FSMLib.Compilation {
       if (CurrentBufferNode == ProducerBuffer.Last) {
         T nextStreamValue = ProducerRead();
         StreamPosition nextPosition = AdvancePosition(nextStreamValue);
+
+        // Continue reading until we find a value we don't want to screen out.
+        while (!Keep(nextStreamValue)) {
+          nextStreamValue = ProducerRead();
+          nextPosition = AdvancePosition(nextStreamValue);
+        }
+
         BufferItem nextBufferEntry = new BufferItem(nextStreamValue, nextPosition);
 
         ProducerBuffer.AddLast(nextBufferEntry);

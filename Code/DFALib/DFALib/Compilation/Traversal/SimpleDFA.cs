@@ -9,13 +9,7 @@ namespace FSMLib.Compilation.Traversal {
     internal SimpleDFA() : this(new Node()) {}
 
     internal SimpleDFA(Node head) {
-
-      // TODO: look into the new syntax here and see if you can use it to remove this explicit exception throw.
-      if (head == null) {
-        throw new ArgumentNullException("head");
-      }
-
-      Head = head;
+      Head = head ?? throw new ArgumentNullException("Head cannot be null");
     }
 
     /// <summary>
@@ -27,7 +21,7 @@ namespace FSMLib.Compilation.Traversal {
 
       foreach (T element in match) {
         acceptingNode.TryAddConnection(element, new Node());
-        acceptingNode = acceptingNode.GetConnection(element);
+        acceptingNode = acceptingNode.GetConnection(element).Destination;
       }
 
       acceptingNode.Accepting = true;
@@ -39,9 +33,12 @@ namespace FSMLib.Compilation.Traversal {
       Node finalNode = Head;
 
       foreach (T element in input) {
-        finalNode = finalNode.TryGetConnection(element);
-        if (finalNode == null) {
+        Transition transition = finalNode.TryGetConnection(element);
+        if (transition == null) {
           return false;
+        } else {
+          transition.InvokeOnTransitioned(element);
+          finalNode = transition.Destination;
         }
       }
 
@@ -49,14 +46,18 @@ namespace FSMLib.Compilation.Traversal {
     }
 
     internal class Node {
+
+      #region Internal Fields
       internal bool Accepting;
-      private Dictionary<T, Node> Connections;
+      #endregion
+
+      private Dictionary<T, Transition> Connections;
 
       internal Node() : this(false) {}
 
       internal Node(bool accepting) {
         Accepting = accepting;
-        Connections = new Dictionary<T, Node>();
+        Connections = new Dictionary<T, Transition>();
       }
 
       internal bool ConnectionExists(T connector) {
@@ -68,7 +69,7 @@ namespace FSMLib.Compilation.Traversal {
           return false;
         }
 
-        Connections.Add(connector, connectedNode);
+        Connections.Add(connector, new Transition(connectedNode));
         return true;
       }
 
@@ -82,16 +83,40 @@ namespace FSMLib.Compilation.Traversal {
         return failed.ToArray();
       }
 
-      internal Node GetConnection(T connector) {
+      internal Transition GetConnection(T connector) {
         return Connections[connector];
       }
 
-      internal Node TryGetConnection(T connector) {
+      internal Transition TryGetConnection(T connector) {
         if (!ConnectionExists(connector)) {
           return null;
         }
 
         return GetConnection(connector);
+      }
+    }
+
+    internal class Transition {
+      public Node Destination;
+      public event EventHandler<DFAEventArgs> OnTransition;
+
+      internal Transition(Node destination) {
+        Destination = destination;
+      }
+
+      internal void InvokeOnTransitioned(T element) {
+        OnTransition(this, new DFAEventArgs(element));
+      }
+    }
+
+    public class DFAEventArgs : EventArgs {
+      /// <summary>
+      /// The element that was consumed in the previous traversal.
+      /// </summary>
+      public T Element;
+
+      public DFAEventArgs(T element) {
+        Element = element;
       }
     }
   }

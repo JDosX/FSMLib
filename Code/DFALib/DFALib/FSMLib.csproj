@@ -40,6 +40,9 @@
     <Compile Include="Compilation\Parsing\Parser.cs" />
     <Compile Include="Compilation\Tokenizing\TokenProvider.cs" />
     <Compile Include="Compilation\BufferedProducer.cs" />
+    <Compile Include="Compilation\AST\StateDeclNode.cs" />
+    <Compile Include="Compilation\Sanitization\Sanitizer.cs" />
+    <Compile Include="Compilation\Sanitization\RegexRawToFnScriptSanitizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FSMTextFormat.txt" />
@@ -57,6 +60,7 @@
     <Folder Include="Compilation\AST\" />
     <Folder Include="Compilation\Traversal\" />
     <Folder Include="Compilation\Parsing\" />
+    <Folder Include="Compilation\Sanitization\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>
