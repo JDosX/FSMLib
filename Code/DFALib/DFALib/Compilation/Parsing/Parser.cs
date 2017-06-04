@@ -143,6 +143,8 @@ namespace FSMLib.Compilation.Parsing {
 
     private TransitionNode ParseTransition() {
       Token token = Tokenizer.Read();
+
+      // {
       if (!(token is ScopeOpenToken)) {
         throw new ArgumentException("Scope not opened here yo.");
       }
@@ -175,6 +177,12 @@ namespace FSMLib.Compilation.Parsing {
       LinkedList<StateNameNode> goalStateList = ParseStateNameList();
       if (goalStateList.Count == 0) {
         throw new ArgumentException("shit bro you forgot your destination list");
+      }
+
+      // }
+      token = Tokenizer.Read();
+      if (!(token is ScopeCloseToken)) {
+        throw new ArgumentException("You gotta close the scope here gurl.");
       }
 
       Tokenizer.FlushBuffer();

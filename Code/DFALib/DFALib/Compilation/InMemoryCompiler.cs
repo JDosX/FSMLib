@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using FSMLib.Compilation.Tokenizing;
 using FSMLib.Compilation.Parsing;
 using FSMLib.Compilation.AST;
+using FSMLib.Compilation.Analysis;
 
 namespace FSMLib.Compilation
 {
@@ -16,8 +17,10 @@ namespace FSMLib.Compilation
       BufferedTextReader positionedReader = new BufferedTextReader(reader);
       Tokenizer tokenizer = new Tokenizer(positionedReader);
       Parser parser = new Parser(tokenizer);
+      SemanticAnalyzer analyzer = new SemanticAnalyzer();
 
       FSMNode fsm = parser.ParseFSM();
+      analyzer.Analyze(fsm);
 
       return null;
     }
