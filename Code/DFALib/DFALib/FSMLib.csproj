@@ -7,7 +7,7 @@
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UseMSBuildEngine>true</UseMSBuildEngine>
     <OutputType>Library</OutputType>
-    <RootNamespace>DFALib</RootNamespace>
+    <RootNamespace>FSMLib</RootNamespace>
     <AssemblyName>DFALib</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile111</TargetFrameworkProfile>
@@ -43,6 +43,8 @@
     <Compile Include="Compilation\AST\StateDeclNode.cs" />
     <Compile Include="Compilation\Sanitization\Sanitizer.cs" />
     <Compile Include="Compilation\Sanitization\RegexRawToFnScriptSanitizer.cs" />
+    <Compile Include="Compilation\Generation\InMemoryGenerator.cs" />
+    <Compile Include="Compilation\Analysis\SemanticAnalyzer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FSMTextFormat.txt" />
@@ -61,6 +63,8 @@
     <Folder Include="Compilation\Traversal\" />
     <Folder Include="Compilation\Parsing\" />
     <Folder Include="Compilation\Sanitization\" />
+    <Folder Include="Compilation\Generation\" />
+    <Folder Include="Compilation\Analysis\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
 </Project>

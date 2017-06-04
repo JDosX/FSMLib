@@ -13,13 +13,23 @@ using FSMLib.Compilation;
 /// </summary>
 public class FSM<T>
 {
-	protected State[] StartingStates;
+	private State[] StartingStates;
+
+  protected const string CURRENT_ITEM_FNVARIABLE_NAME = "T";
 	protected FnVariable<T> CurrentItem;
 
-	protected class State
-	{
-		public const string CURRENT_ITEM_FNVARIABLE_NAME = "T";
+  internal class Transition {
+    public State Destination;
+    public FnScriptExpression<bool> Function;
 
+    public Transition(State destination, FnScriptExpression<bool> function) {
+      Destination = destination;
+      Function = function;
+    }
+  }
+
+	internal class State
+	{
 		/// <summary>
 		/// The name of the state.
 		/// </summary>
@@ -29,7 +39,7 @@ public class FSM<T>
 		/// If set, then ending a traversal of the FSM on this state would be considered a successful traversal.
 		/// </summary>
 		public bool Accepting;
-		private List<Tuple<State, FnScriptExpression<bool>>> Transitions;
+		private List<Transition> Transitions;
 
 		// private Dictionary<State, List<FnScriptExpression<bool>>> Transitions;
 
@@ -39,7 +49,7 @@ public class FSM<T>
 		{
 			Name        = name;
 			Accepting   = accepting;
-			Transitions = new List<Tuple<State, FnScriptExpression<bool>>>();
+			Transitions = new List<Transition>();
 			// Transitions = new Dictionary<State, List<FnScriptExpression<bool>>> ();
 		}
 
@@ -50,7 +60,7 @@ public class FSM<T>
 		/// <param name="transitionFunction">The transition function to use</param>
 		public void AddTransition(State state, FnScriptExpression<bool> transitionFunction)
 		{
-			Transitions.Add(new Tuple<State, FnScriptExpression<bool>> (state, transitionFunction));
+			Transitions.Add(new Transition(state, transitionFunction));
 		}
 
 		public HashSet<State> Traverse(T input)
@@ -60,13 +70,13 @@ public class FSM<T>
 			// todo: finish
 			// iterate through all the states and all their transition functions.
 			// Return a list of all the states who's transition functions returned true.
-			foreach (Tuple<State, FnScriptExpression<bool>> t in Transitions)
+			foreach (Transition t in Transitions)
 			{
-				t.Item2.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, t.Item1);
+				t.Function.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, input);
 
-				if (t.Item2.Execute())
+				if (t.Function.Execute())
 				{
-					transitions.Add(t.Item1);
+					transitions.Add(t.Destination);
 				}
 			}
 
