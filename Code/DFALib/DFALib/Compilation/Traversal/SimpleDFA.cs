@@ -47,9 +47,7 @@ namespace FSMLib.Compilation.Traversal {
 
     internal class Node {
 
-      #region Internal Fields
       internal bool Accepting;
-      #endregion
 
       private Dictionary<T, Transition> Connections;
 
@@ -64,20 +62,21 @@ namespace FSMLib.Compilation.Traversal {
         return Connections.ContainsKey(connector);
       }
 
-      internal bool TryAddConnection(T connector, Node connectedNode) {
+      internal Transition TryAddConnection(T connector, Node connectedNode) {
         if (ConnectionExists(connector)) {
-          return false;
+          return null;
         }
 
-        Connections.Add(connector, new Transition(connectedNode));
-        return true;
+        Transition transition = new Transition(connectedNode);
+        Connections.Add(connector, transition);
+        return transition;
       }
 
       internal T[] TryAddConnections(ICollection<T> connectors, Node connectedNode) {
         List<T> failed = new List<T>();
 
         foreach (T connector in connectors) {
-          if (!TryAddConnection(connector, connectedNode)) { failed.Add(connector); }
+          if (TryAddConnection(connector, connectedNode) == null) { failed.Add(connector); }
         }
 
         return failed.ToArray();
