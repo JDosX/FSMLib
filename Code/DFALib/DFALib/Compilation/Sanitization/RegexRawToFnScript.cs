@@ -1,5 +1,4 @@
 ﻿using System;
-
 using FSMLib.Compilation.Traversal;
 
 namespace FSMLib.Compilation.Sanitization {
@@ -10,20 +9,30 @@ namespace FSMLib.Compilation.Sanitization {
       SimpleDFA<char>.Node escapeSlash = new SimpleDFA<char>.Node(false);
       SimpleDFA<char>.Node regexEnd = new SimpleDFA<char>.Node(true);
 
-      head.TryAddConnection('/', regexBody).OnTransition += (sender, args) => {
-        Contents.Append("RegexMatch([s], ");
+      // RegexMatch([s], "
+      head.SetTransition('/', regexBody).OnTransition += (sender, args) => {
+        Contents.Append(String.Format("RegexMatch([{0}], \"", FSM<object>.CURRENT_ITEM_FNVARIABLE_NAME));
       };
 
-      // Parsing escape characters
-      regexBody.TryAddConnection('\\', escapeSlash);
+      // Regex Body
+      regexBody.SetTransition(CharUtils.AllCharsExcept(new char[] { '\\', '/' }), regexBody).OnTransition += (sender, args) => {
+        Contents.Append(args.Element);
+      };
 
-      // TODO: The below doesn't work because each char gets a unique transition, and that's bubkiss because
-      // we need to append the event to all the transitions. We need to make it such that when you add connections,
-      // each input char gets the same transiton. So essentially:
-      // HashSet<char> --- maps to ---> Transiton --- composed of ---> (Destination, Event Handler)
-      escapeSlash.TryAddConnections(AllChars, regexBody).OnTransition += (sender, args) => {
-        Contents.Append("\\" + args.Element);
-      }
+      // The only escape character that needs to be transformed is /, as this is also used as the regex delimiter.
+      // All other escape characters are replaced as they were.
+      regexBody.SetTransition('\\', escapeSlash);
+      escapeSlash.SetTransition('/', regexBody).OnTransition += (sender, args) => {
+        Contents.Append(args.Element);
+      };
+      escapeSlash.SetTransition(CharUtils.AllCharsExcept('/'), regexBody).OnTransition += (sender, args) => {
+        Contents.Append(String.Format("\\{0}", args.Element));
+      };
+
+      // ")
+      regexBody.SetTransition('/', regexEnd).OnTransition += (sender, args) => {
+        Contents.Append("\")");
+      };
     }
   }
 }

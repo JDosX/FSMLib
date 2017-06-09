@@ -20,8 +20,8 @@ namespace FSMLib.Compilation.Traversal {
       Node acceptingNode = Head;
 
       foreach (T element in match) {
-        acceptingNode.TryAddConnection(element, new Node());
-        acceptingNode = acceptingNode.GetConnection(element).Destination;
+        acceptingNode.SetTransition(element, new Node());
+        acceptingNode = acceptingNode.GetTransition(element).Destination;
       }
 
       acceptingNode.Accepting = true;
@@ -33,7 +33,7 @@ namespace FSMLib.Compilation.Traversal {
       Node finalNode = Head;
 
       foreach (T element in input) {
-        Transition transition = finalNode.TryGetConnection(element);
+        Transition transition = finalNode.GetTransition(element);
         if (transition == null) {
           return false;
         } else {
@@ -49,49 +49,40 @@ namespace FSMLib.Compilation.Traversal {
 
       internal bool Accepting;
 
-      private Dictionary<T, Transition> Connections;
+      private Dictionary<T, Transition> Transitions;
 
       internal Node() : this(false) {}
 
       internal Node(bool accepting) {
         Accepting = accepting;
-        Connections = new Dictionary<T, Transition>();
+        Transitions = new Dictionary<T, Transition>();
       }
 
-      internal bool ConnectionExists(T connector) {
-        return Connections.ContainsKey(connector);
+      internal bool TransitionExists(T connector) {
+        return Transitions.ContainsKey(connector);
       }
 
-      internal Transition TryAddConnection(T connector, Node connectedNode) {
-        if (ConnectionExists(connector)) {
-          return null;
-        }
-
+      internal Transition SetTransition(T connector, Node connectedNode) {
         Transition transition = new Transition(connectedNode);
-        Connections.Add(connector, transition);
+        Transitions[connector] = transition;
         return transition;
       }
 
-      internal T[] TryAddConnections(ICollection<T> connectors, Node connectedNode) {
-        List<T> failed = new List<T>();
-
+      internal Transition SetTransition(ICollection<T> connectors, Node connectedNode) {
+        Transition transition = new Transition(connectedNode);
         foreach (T connector in connectors) {
-          if (TryAddConnection(connector, connectedNode) == null) { failed.Add(connector); }
+          Transitions[connector] = transition;
         }
 
-        return failed.ToArray();
+        return transition;
       }
 
-      internal Transition GetConnection(T connector) {
-        return Connections[connector];
-      }
-
-      internal Transition TryGetConnection(T connector) {
-        if (!ConnectionExists(connector)) {
+      internal Transition GetTransition(T connector) {
+        if (!TransitionExists(connector)) {
           return null;
         }
 
-        return GetConnection(connector);
+        return Transitions[connector];
       }
     }
 

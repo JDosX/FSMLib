@@ -68,7 +68,7 @@ namespace FSMLib.Compilation.Tokenizing {
 
     internal override FeedState Feed(char c, StreamPosition tokenEnd) {
       if (State != FeedState.Invalid || State != FeedState.Done) {
-        SimpleDFA<char>.Transition nextTransition = CurrentNode.TryGetConnection(c);
+        SimpleDFA<char>.Transition nextTransition = CurrentNode.GetTransition(c);
 
         // If next char is invalid
         // TODO: does this mean that there must always be a next character in order for this traversal to work? What
@@ -87,40 +87,6 @@ namespace FSMLib.Compilation.Tokenizing {
       }
 
       return State;
-    }
-
-    /// <summary>
-    /// All the chars in the range [0, 127] (inclusive).
-    /// </summary>
-    /// <returns>The chars.</returns>
-    protected HashSet<char> AllChars() {
-      HashSet<char> allChars = new HashSet<char>();
-
-      for (char c = (char)0; c <= (char)127; c++) {
-        allChars.Add(c);
-      }
-
-      return allChars;
-    }
-
-    protected HashSet<char> AllCharsExcept(ICollection<char> exclusions) {
-      HashSet<char> allChars = AllChars();
-
-      foreach (char exclusion in exclusions) {
-        allChars.Remove(exclusion);
-      }
-
-      return allChars;
-    }
-
-    protected HashSet<char> AllCharsInRange(char min, char max) {
-      HashSet<char> allChars = new HashSet<char>();
-
-      for (char c = min; c <= max; c++) {
-        allChars.Add(c);
-      }
-
-      return allChars;
     }
   }
 
@@ -148,16 +114,16 @@ namespace FSMLib.Compilation.Tokenizing {
       SimpleDFA<char>.Node ValidName = new SimpleDFA<char>.Node(true);
 
       HashSet<char> validStartingChars = new HashSet<char>();
-      validStartingChars.UnionWith(AllCharsInRange('A', 'Z'));
-      validStartingChars.UnionWith(AllCharsInRange('a', 'z'));
+      validStartingChars.UnionWith(CharUtils.AllCharsInRange('A', 'Z'));
+      validStartingChars.UnionWith(CharUtils.AllCharsInRange('a', 'z'));
       validStartingChars.Add('_');
 
       HashSet<char> validFollowingChars = new HashSet<char>();
       validFollowingChars.UnionWith(validStartingChars);
-      validFollowingChars.UnionWith(AllCharsInRange('0', '9'));
+      validFollowingChars.UnionWith(CharUtils.AllCharsInRange('0', '9'));
 
-      Head.TryAddConnections(validStartingChars, ValidName);
-      ValidName.TryAddConnections(validFollowingChars, ValidName);
+      Head.SetTransition(validStartingChars, ValidName);
+      ValidName.SetTransition(validFollowingChars, ValidName);
     }
   }
 
@@ -176,13 +142,13 @@ namespace FSMLib.Compilation.Tokenizing {
         'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\'
       };
 
-      Head.TryAddConnection('\'', CharStart);
-      CharStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '\'' }), CharProvided);
-      CharStart.TryAddConnection('\\', EscapeSlash);
+      Head.SetTransition('\'', CharStart);
+      CharStart.SetTransition(CharUtils.AllCharsExcept(new char[] { '\\', '\'' }), CharProvided);
+      CharStart.SetTransition('\\', EscapeSlash);
 
-      EscapeSlash.TryAddConnections(simpleEscapeCharacters, CharProvided);
+      EscapeSlash.SetTransition(simpleEscapeCharacters, CharProvided);
 
-      CharProvided.TryAddConnection('\'', CharEnd);
+      CharProvided.SetTransition('\'', CharEnd);
     }
   }
 
@@ -197,12 +163,12 @@ namespace FSMLib.Compilation.Tokenizing {
         'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\'
       };
 
-      Head.TryAddConnection('"', StringStart);
-      StringStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '"' }), StringStart);
-      StringStart.TryAddConnection('\\', EscapeSlash);
-      StringStart.TryAddConnection('"', StringEnd);
+      Head.SetTransition('"', StringStart);
+      StringStart.SetTransition(CharUtils.AllCharsExcept(new char[] { '\\', '"' }), StringStart);
+      StringStart.SetTransition('\\', EscapeSlash);
+      StringStart.SetTransition('"', StringEnd);
 
-      EscapeSlash.TryAddConnections(simpleEscapeCharacters, StringStart);
+      EscapeSlash.SetTransition(simpleEscapeCharacters, StringStart);
     }
   }
 
@@ -219,12 +185,12 @@ namespace FSMLib.Compilation.Tokenizing {
         'a', 'b', 'f', 'n', 'r', 't', 'v', '\'', '"', '\\', '/'
       };
 
-      Head.TryAddConnection('/', RegexStart);
-      RegexStart.TryAddConnections(AllCharsExcept(new char[] { '\\', '/' }), RegexStart);
-      RegexStart.TryAddConnection('\\', EscapeSlash);
-      RegexStart.TryAddConnection('/', RegexEnd);
+      Head.SetTransition('/', RegexStart);
+      RegexStart.SetTransition(CharUtils.AllCharsExcept(new char[] { '\\', '/' }), RegexStart);
+      RegexStart.SetTransition('\\', EscapeSlash);
+      RegexStart.SetTransition('/', RegexEnd);
 
-      EscapeSlash.TryAddConnections(simpleEscapeCharacters, RegexStart);
+      EscapeSlash.SetTransition(simpleEscapeCharacters, RegexStart);
     }
   }
 
@@ -243,30 +209,30 @@ namespace FSMLib.Compilation.Tokenizing {
 
       SimpleDFA<char>.Node scriptEnd = new SimpleDFA<char>.Node(true);
 
-      head.TryAddConnection('`', script);
-      script.TryAddConnections(AllCharsExcept(new char[] { '"', '\'', '[', '`' }), script);
-      script.TryAddConnection('"', scriptString);
-      script.TryAddConnection('\'', scriptChar);
-      script.TryAddConnection('[', scriptParameter);
+      head.SetTransition('`', script);
+      script.SetTransition(CharUtils.AllCharsExcept(new char[] { '"', '\'', '[', '`' }), script);
+      script.SetTransition('"', scriptString);
+      script.SetTransition('\'', scriptChar);
+      script.SetTransition('[', scriptParameter);
 
       // Strings in an Fnscript expression.
-      scriptString.TryAddConnections(AllCharsExcept(new char[] { '"', '\\' }), scriptString);
-      scriptString.TryAddConnection('\\', stringEscape);
-      scriptString.TryAddConnection('"', script);
-      stringEscape.TryAddConnections(AllChars(), scriptString);
+      scriptString.SetTransition(CharUtils.AllCharsExcept(new char[] { '"', '\\' }), scriptString);
+      scriptString.SetTransition('\\', stringEscape);
+      scriptString.SetTransition('"', script);
+      stringEscape.SetTransition(CharUtils.AllChars(), scriptString);
 
       // Chars in an Fnscript expression.
-      scriptChar.TryAddConnections(AllCharsExcept(new char[] { '\'', '\\' }), scriptChar);
-      scriptChar.TryAddConnection('\\', charEscape);
-      scriptChar.TryAddConnection('\'', script);
-      charEscape.TryAddConnections(AllChars(), scriptChar);
+      scriptChar.SetTransition(CharUtils.AllCharsExcept(new char[] { '\'', '\\' }), scriptChar);
+      scriptChar.SetTransition('\\', charEscape);
+      scriptChar.SetTransition('\'', script);
+      charEscape.SetTransition(CharUtils.AllChars(), scriptChar);
 
       // FnScript Parameters.
-      scriptParameter.TryAddConnections(AllCharsExcept(new char[] { ']' }), scriptParameter);
-      scriptParameter.TryAddConnection(']', script);
+      scriptParameter.SetTransition(CharUtils.AllCharsExcept(new char[] { ']' }), scriptParameter);
+      scriptParameter.SetTransition(']', script);
 
       // Ending FnScript Expression.
-      script.TryAddConnection('`', scriptEnd);
+      script.SetTransition('`', scriptEnd);
     }
   }
 
@@ -275,8 +241,8 @@ namespace FSMLib.Compilation.Tokenizing {
       SimpleDFA<char>.Node head = DFA.Head;
       SimpleDFA<char>.Node comment = new SimpleDFA<char>.Node(true);
 
-      head.TryAddConnection('#', comment);
-      comment.TryAddConnections(AllCharsExcept(new char[] {'\n'}), comment);
+      head.SetTransition('#', comment);
+      comment.SetTransition(CharUtils.AllCharsExcept(new char[] {'\n'}), comment);
     }
   }
 
@@ -288,14 +254,14 @@ namespace FSMLib.Compilation.Tokenizing {
       SimpleDFA<char>.Node commentSuffixStart = new SimpleDFA<char>.Node(false);
       SimpleDFA<char>.Node   commentSuffixEnd = new SimpleDFA<char>.Node(true);
 
-      head.TryAddConnection('<', commentPrefix);
-      commentPrefix.TryAddConnection('#', comment);
+      head.SetTransition('<', commentPrefix);
+      commentPrefix.SetTransition('#', comment);
 
-      comment.TryAddConnections(AllCharsExcept(new char[] { '#' }), comment);
-      comment.TryAddConnection('#', commentSuffixStart);
+      comment.SetTransition(CharUtils.AllCharsExcept(new char[] { '#' }), comment);
+      comment.SetTransition('#', commentSuffixStart);
 
-      commentSuffixStart.TryAddConnections(AllCharsExcept(new char[] { '>' }), comment);
-      commentSuffixStart.TryAddConnection('>', commentSuffixEnd);
+      commentSuffixStart.SetTransition(CharUtils.AllCharsExcept(new char[] { '>' }), comment);
+      commentSuffixStart.SetTransition('>', commentSuffixEnd);
     }
   }
 

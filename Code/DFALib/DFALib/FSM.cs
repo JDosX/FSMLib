@@ -15,7 +15,7 @@ public class FSM<T>
 {
 	private State[] StartingStates;
 
-  protected const string CURRENT_ITEM_FNVARIABLE_NAME = "T";
+  public const string CURRENT_ITEM_FNVARIABLE_NAME = "s";
 	protected FnVariable<T> CurrentItem;
 
   internal class Transition {
@@ -28,8 +28,7 @@ public class FSM<T>
     }
   }
 
-	internal class State
-	{
+	internal class State {
 		/// <summary>
 		/// The name of the state.
 		/// </summary>
