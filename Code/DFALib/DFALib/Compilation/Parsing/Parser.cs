@@ -106,15 +106,18 @@ namespace FSMLib.Compilation.Parsing {
       }
 
       // ->
-      token = Tokenizer.Read();
-      if (!(token is ArrowToken)) {
-        throw new ArgumentException("Aww shit an arrow token was expected.");
-      }
+      if (Tokenizer.Peek() is ArrowToken) {
+        // Consume arrow
+        Tokenizer.Read();
 
-      // Transitions
-      transitions = ParseTransitionList();
-      if (transitions.Count == 0) {
-        throw new ArgumentException("Fuark man why u no put any transition functions.");
+        // Transitions.
+        transitions = ParseTransitionList();
+        if (transitions.Count == 0) {
+          throw new ArgumentException("Fuark man why u no put any transition functions.");
+        }
+      } else {
+        // No transitions.
+        transitions = new LinkedList<TransitionNode>();
       }
 
       Tokenizer.FlushBuffer();

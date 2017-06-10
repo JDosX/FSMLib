@@ -91,6 +91,7 @@ namespace FSMLib.Compilation.Traversal {
       public event EventHandler<DFAEventArgs> OnTransition;
 
       internal Transition(Node destination) {
+        OnTransition = delegate { };
         Destination = destination;
       }
 

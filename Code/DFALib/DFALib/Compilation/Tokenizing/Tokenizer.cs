@@ -87,6 +87,9 @@ namespace FSMLib.Compilation.Tokenizing
     }
 
     protected override StreamPosition AdvancePosition(Token nextStreamValue) {
+      if (nextStreamValue == null) {
+        return new StreamPosition(Position);
+      }
       return new StreamPosition(nextStreamValue.TokenStart);
     }
 

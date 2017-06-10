@@ -18,21 +18,31 @@ public class FSM<T>
 
 	private List<State> StartingStates;
 
+  #region FnScript Collection Parameters
   public const string CURRENT_ITEM_FNVARIABLE_NAME = "s";
 	protected FnVariable<T> CurrentItem;
+  #endregion
+
+  private Dictionary<string, FnObject> FSMCollectionParameters;
 
   /// <summary>
   /// Constructor.
   /// </summary>
   /// <param name="name">The name of the FSM.</param>
-	public FSM(string name) {
+  public FSM(string name) {
     States = new Dictionary<string, State>();
     StartingStates = new List<State>();
+    FSMCollectionParameters = new Dictionary<string, FnObject>();
 
     CurrentItem = new FnVariable<T>(default(T));
-
     Name = name;
+
+    ConstructCollectionParameters();
 	}
+
+  private void ConstructCollectionParameters() {
+    FSMCollectionParameters.Add(CURRENT_ITEM_FNVARIABLE_NAME, CurrentItem);
+  }
 
   /// <summary>
   /// Adds a new state to the FSM.
@@ -41,7 +51,7 @@ public class FSM<T>
   /// <param name="starting">Whether the state is a starting state for the FSM.</param>
   /// <param name="accepting">Whether the state is an accepting state.</param>
   public void AddState(string name, bool starting, bool accepting) {
-    State state = new State(name, accepting);
+    State state = new State(name, accepting, FSMCollectionParameters);
     States.Add(name, state);
     if (starting) {
       StartingStates.Add(state);
@@ -119,13 +129,22 @@ public class FSM<T>
     /// If set, then ending a traversal of the FSM on this state would be considered a successful traversal.
     /// </summary>
     public bool Accepting;
+
+    /// <summary>
+    /// Transitions from this state to destination states.
+    /// </summary>
     private List<Transition> Transitions;
 
-    public State(string name) : this(name, false) { }
+    /// <summary>
+    /// Collection of FnScript parameters to use in transitions
+    /// </summary>
+    private Dictionary<string, FnObject> CollectionParameters;
 
-    public State(string name, bool accepting) {
+    public State(string name, bool accepting, Dictionary<string, FnObject> collectionParameters) {
       Name = name;
       Accepting = accepting;
+      CollectionParameters = collectionParameters;
+
       Transitions = new List<Transition>();
     }
 
@@ -135,24 +154,21 @@ public class FSM<T>
     /// <param name="states">The state to transition to</param>
     /// <param name="transitionFunction">The transition function to use</param>
     public void AddTransition(string transitionFunction, ICollection<State> states) {
-      Transitions.Add(new Transition(transitionFunction, null, states));
+      Transitions.Add(new Transition(transitionFunction, CollectionParameters, states));
     }
 
     public HashSet<State> Traverse(T input) {
-      HashSet<State> transitions = new HashSet<State>();
+      HashSet<State> destinations = new HashSet<State>();
 
-      // todo: finish
-      // iterate through all the states and all their transition functions.
-      // Return a list of all the states who's transition functions returned true.
-      foreach (Transition t in Transitions) {
-        t.Function.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, input);
+      foreach (Transition transition in Transitions) {
+        transition.Function.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, input);
 
-        if (t.Function.Execute()) {
-          transitions.Add(t.Destination);
+        if (transition.Function.Execute()) {
+          destinations.UnionWith(transition.Destinations);
         }
       }
 
-      return transitions;
+      return destinations;
     }
   }
 
