@@ -13,81 +13,54 @@ using FSMLib.Compilation;
 /// </summary>
 public class FSM<T>
 {
-	private State[] StartingStates;
+  private string Name;
+  private Dictionary<string, State> States;
+
+	private List<State> StartingStates;
 
   public const string CURRENT_ITEM_FNVARIABLE_NAME = "s";
 	protected FnVariable<T> CurrentItem;
 
-  internal class Transition {
-    public State Destination;
-    public FnScriptExpression<bool> Function;
+  /// <summary>
+  /// Constructor.
+  /// </summary>
+  /// <param name="name">The name of the FSM.</param>
+	public FSM(string name) {
+    States = new Dictionary<string, State>();
+    StartingStates = new List<State>();
 
-    public Transition(State destination, FnScriptExpression<bool> function) {
-      Destination = destination;
-      Function = function;
+    CurrentItem = new FnVariable<T>(default(T));
+
+    Name = name;
+	}
+
+  /// <summary>
+  /// Adds a new state to the FSM.
+  /// </summary>
+  /// <param name="name">The name of the state.</param>
+  /// <param name="starting">Whether the state is a starting state for the FSM.</param>
+  /// <param name="accepting">Whether the state is an accepting state.</param>
+  public void AddState(string name, bool starting, bool accepting) {
+    State state = new State(name, accepting);
+    States.Add(name, state);
+    if (starting) {
+      StartingStates.Add(state);
     }
   }
 
-	internal class State {
-		/// <summary>
-		/// The name of the state.
-		/// </summary>
-		private string Name;
+  public void AddTransition(string fromState, string transitionFunction, string toState) {
+    AddTransition(fromState, transitionFunction, new string[] { toState });
+  }
 
-		/// <summary>
-		/// If set, then ending a traversal of the FSM on this state would be considered a successful traversal.
-		/// </summary>
-		public bool Accepting;
-		private List<Transition> Transitions;
+  public void AddTransition(string fromState, string transitionFunction, ICollection<string> toStates) {
+    State sourceState = States[fromState];
+    HashSet<State> destinationStates = new HashSet<State>();
+    foreach (string toState in toStates) {
+      destinationStates.Add(States[toState]);
+    }
 
-		// private Dictionary<State, List<FnScriptExpression<bool>>> Transitions;
-
-		public State(string name) : this(name, false) { }
-
-		public State(string name, bool accepting)
-		{
-			Name        = name;
-			Accepting   = accepting;
-			Transitions = new List<Transition>();
-			// Transitions = new Dictionary<State, List<FnScriptExpression<bool>>> ();
-		}
-
-		/// <summary>
-		/// Adds a new transition from this state to another.
-		/// </summary>
-		/// /// <param name="state">The state to transition to</param>
-		/// <param name="transitionFunction">The transition function to use</param>
-		public void AddTransition(State state, FnScriptExpression<bool> transitionFunction)
-		{
-			Transitions.Add(new Transition(state, transitionFunction));
-		}
-
-		public HashSet<State> Traverse(T input)
-		{
-			HashSet<State> transitions = new HashSet<State>();
-
-			// todo: finish
-			// iterate through all the states and all their transition functions.
-			// Return a list of all the states who's transition functions returned true.
-			foreach (Transition t in Transitions)
-			{
-				t.Function.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, input);
-
-				if (t.Function.Execute())
-				{
-					transitions.Add(t.Destination);
-				}
-			}
-
-			return transitions;
-		}
-	}
-
-
-	public FSM()
-	{
-		// todo: finish constructor
-	}
+    sourceState.AddTransition(transitionFunction, destinationStates);
+  }
 
 	public bool Traverse(IEnumerable<T> input)
 	{
@@ -122,4 +95,66 @@ public class FSM<T>
   public static FSM<T> FromReader(TextReader reader) {
     return InMemoryCompiler.FromReader<T>(reader);
   }
+
+  #region Nested Classes
+
+  internal class Transition {
+    public HashSet<State> Destinations;
+    public FnScriptExpression<bool> Function;
+
+    public Transition(string fnScriptFunction, Dictionary<string, FnObject> collectionParameters, ICollection<State> destinations) {
+      FnScriptCompiler compiler = new FnScriptCompiler();
+      Function = compiler.Compile<bool>(fnScriptFunction, null, collectionParameters);
+      Destinations = new HashSet<State>(destinations);
+    }
+  }
+
+  internal class State {
+    /// <summary>
+    /// The name of the state.
+    /// </summary>
+    private string Name;
+
+    /// <summary>
+    /// If set, then ending a traversal of the FSM on this state would be considered a successful traversal.
+    /// </summary>
+    public bool Accepting;
+    private List<Transition> Transitions;
+
+    public State(string name) : this(name, false) { }
+
+    public State(string name, bool accepting) {
+      Name = name;
+      Accepting = accepting;
+      Transitions = new List<Transition>();
+    }
+
+    /// <summary>
+    /// Adds a new transition from this state to another.
+    /// </summary>
+    /// <param name="states">The state to transition to</param>
+    /// <param name="transitionFunction">The transition function to use</param>
+    public void AddTransition(string transitionFunction, ICollection<State> states) {
+      Transitions.Add(new Transition(transitionFunction, null, states));
+    }
+
+    public HashSet<State> Traverse(T input) {
+      HashSet<State> transitions = new HashSet<State>();
+
+      // todo: finish
+      // iterate through all the states and all their transition functions.
+      // Return a list of all the states who's transition functions returned true.
+      foreach (Transition t in Transitions) {
+        t.Function.SetParameter(CURRENT_ITEM_FNVARIABLE_NAME, input);
+
+        if (t.Function.Execute()) {
+          transitions.Add(t.Destination);
+        }
+      }
+
+      return transitions;
+    }
+  }
+
+  #endregion
 }

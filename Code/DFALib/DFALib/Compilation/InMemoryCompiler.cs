@@ -7,6 +7,7 @@ using FSMLib.Compilation.Tokenizing;
 using FSMLib.Compilation.Parsing;
 using FSMLib.Compilation.AST;
 using FSMLib.Compilation.Analysis;
+using FSMLib.Compilation.Generation;
 
 namespace FSMLib.Compilation
 {
@@ -18,11 +19,14 @@ namespace FSMLib.Compilation
       Tokenizer tokenizer = new Tokenizer(positionedReader);
       Parser parser = new Parser(tokenizer);
       SemanticAnalyzer analyzer = new SemanticAnalyzer();
+      InMemoryGenerator<T> generator = new InMemoryGenerator<T>();
 
-      FSMNode fsm = parser.ParseFSM();
-      analyzer.Analyze(fsm);
+      FSMNode fsmAst = parser.ParseFSM();
+      analyzer.Analyze(fsmAst);
 
-      return null;
+      FSM<T> fsm = generator.FromAST(fsmAst);
+
+      return fsm;
     }
   }
 }
