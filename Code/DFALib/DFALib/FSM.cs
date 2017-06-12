@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using FunctionScript;
 
@@ -103,6 +104,9 @@ public class FSM<T>
 	}
 
   public static FSM<T> FromReader(TextReader reader) {
+    // Ensures that extension methods have been added to FunctionScript.
+    RuntimeHelpers.RunClassConstructor(typeof(FnScriptExtender).TypeHandle);
+
     return InMemoryCompiler.FromReader<T>(reader);
   }
 

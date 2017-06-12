@@ -8,15 +8,17 @@ namespace FSMLibUserTest {
     public static void Main(string[] args) {
       string fsm1 =
         "fsm FSM1 {" +
-        "  +State1 -> { `[s] < 'z'` -> State2 }" +
-        "   State2 -> { 'a' -> State3 }" +
-        "   State3 -> { 'd' -> State4 }" +
+        "  +State1 -> { /0.1.0.1./ -> State2 }" +
+        "   State2 -> { \"am\" -> State3 }" +
+        "   State3 -> { \"Sam\" -> State4 }" +
         "  *State4" +
         "}";
 
-      FSM<char> fsm = FSM<char>.FromReader(new StringReader(fsm1));
+      FSM<string> fsm = FSM<string>.FromReader(new StringReader(fsm1));
 
-      bool success = fsm.Traverse("zad".ToCharArray());
+      string[] stringCollection = new string[] { "0a1b0c1d", "am", "Sam" };
+
+      bool success = fsm.Traverse(stringCollection);
       Console.WriteLine(success);
 
       Console.ReadKey();

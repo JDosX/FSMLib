@@ -49,6 +49,7 @@
     <Compile Include="Compilation\Sanitization\RegexRawToFnScript.cs" />
     <Compile Include="Compilation\Generation\InMemoryGenerator.cs" />
     <Compile Include="Compilation\Analysis\SemanticAnalyzer.cs" />
+    <Compile Include="Compilation\FnMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FSMTextFormat.txt" />
