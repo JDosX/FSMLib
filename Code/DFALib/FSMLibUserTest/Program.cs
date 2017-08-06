@@ -8,7 +8,7 @@ namespace FSMLibUserTest {
     public static void Main(string[] args) {
       string fsm1 =
         "fsm FSM1 {" +
-        "  +State1 -> { /0.1.0.1./ -> State2 }" +
+        "  +State1 -> { \"I\" -> State2 }" +
         "   State2 -> { \"am\" -> State3 }" +
         "   State3 -> { \"Sam\" -> State4 }" +
         "  *State4" +
@@ -16,7 +16,7 @@ namespace FSMLibUserTest {
 
       FSM<string> fsm = FSM<string>.FromReader(new StringReader(fsm1));
 
-      string[] stringCollection = new string[] { "0a1b0c1d", "am", "Sam" };
+      string[] stringCollection = new string[] { "I", "am", "Sam" };
 
       bool success = fsm.Traverse(stringCollection);
       Console.WriteLine(success);
