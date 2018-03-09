@@ -6,7 +6,7 @@ using FSMLib.Compilation.Traversal;
 
 namespace FSMLib.Compilation.Sanitization {
 
-  // TODO: User sanitizers when transforming an AST into machine code. Do not use in the parsing stage.
+  // TODO: Use sanitizers when transforming an AST into machine code. Do not use in the parsing stage.
   internal abstract class Sanitizer {
     protected StringBuilder Contents;
     protected SimpleDFA<char> SanitizationDFA;

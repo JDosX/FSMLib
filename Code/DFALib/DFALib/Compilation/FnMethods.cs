@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using FunctionScript;
 
 namespace FSMLib.Compilation {
-  internal class FnMethod_RegexMatch : FnMethod<bool> {
+  internal class FnMethod_RegexMatch : FnFunction<bool> {
     [FnArg] protected FnObject<string> Input;
     [FnArg] protected FnObject<string> Pattern;
 
@@ -14,8 +14,8 @@ namespace FSMLib.Compilation {
 
   internal static class FnScriptExtender {
     static FnScriptExtender() {
-      FnScriptResources.AddSwitch("RegexMatch");
-      FnScriptResources.AddMethodPointerToSwitch("RegexMatch", new FnMethod_RegexMatch());
+      FnScriptResources.CreateFunctionGroup("RegexMatch");
+      FnScriptResources.AddFunctionToGroup("RegexMatch", new FnMethod_RegexMatch());
     }
   }
 }
