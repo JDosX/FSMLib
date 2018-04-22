@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace FSMLib.Compilation {
   public abstract class BufferedProducer<T> {
